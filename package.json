@@ -23,7 +23,7 @@
     "mocha": "^11.7.5",
     "postcss": "^8.5.6",
     "selenium-webdriver": "^4.39.0",
-    "tailwindcss": "^4.1.18",
+    "tailwindcss": "^3.4.17",
     "typescript": "~5.8.2",
     "vite": "^6.2.0"
   }
