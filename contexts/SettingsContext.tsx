@@ -28,7 +28,7 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
         const fetchSettings = async () => {
             setLoading(true);
             try {
-                const response = await fetch('http://localhost:3000/api/settings');
+                const response = await fetch(`${API_URL}/api/settings`);
                 if (response.ok) {
                     const data = await response.json();
                     setSettings(data);
@@ -46,7 +46,7 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
 
     const updateSettings = async (newSettings: AppSettings) => {
         try {
-            const response = await fetch('http://localhost:3000/api/settings', {
+            const response = await fetch(`${API_URL}/api/settings`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

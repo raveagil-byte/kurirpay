@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Role } from '../types';
+import { API_URL } from '../config';
 
 interface LoginPageProps {
   appName: string;
@@ -32,7 +33,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ appName }) => {
         setShowPassword(false);
       } else if (viewMode === 'forgot') {
         // Handle Forgot Password
-        const response = await fetch('http://localhost:3000/api/auth/forgot-password', {
+        const response = await fetch(`${API_URL}/api/auth/forgot-password`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email })

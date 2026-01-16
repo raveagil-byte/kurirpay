@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { User } from '../types';
 import { useAuth } from '../contexts/AuthContext';
+import { API_URL } from '../config';
 
 export const useUsers = () => {
     const { user: currentUser, updateUserSession, token } = useAuth();
@@ -12,7 +13,7 @@ export const useUsers = () => {
         if (!token) return;
         setLoading(true);
         try {
-            const response = await fetch('http://localhost:3000/api/users', {
+            const response = await fetch(`${API_URL}/api/users`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await response.json();
@@ -41,7 +42,7 @@ export const useUsers = () => {
 
     const deleteUser = async (id: string) => {
         try {
-            const response = await fetch(`http://localhost:3000/api/users/${id}`, {
+            const response = await fetch(`${API_URL}/api/users/${id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });

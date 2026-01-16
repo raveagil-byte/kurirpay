@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Delivery } from '../types';
 import { useAuth } from '../contexts/AuthContext';
+import { API_URL } from '../config';
 import { useSettings } from '../contexts/SettingsContext';
 
 export const useDeliveries = () => {
@@ -63,7 +64,7 @@ export const useDeliveries = () => {
 
     const updateDelivery = async (updated: Delivery) => {
         try {
-            const response = await fetch(`http://localhost:3000/api/deliveries/${updated.id}`, {
+            const response = await fetch(`${API_URL}/api/deliveries/${updated.id}`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -81,7 +82,7 @@ export const useDeliveries = () => {
 
     const deleteDelivery = async (id: string) => {
         try {
-            const response = await fetch(`http://localhost:3000/api/deliveries/${id}`, {
+            const response = await fetch(`${API_URL}/api/deliveries/${id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
