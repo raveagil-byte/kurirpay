@@ -2,7 +2,6 @@
   "name": "kurirpay---sistem-pengajian-kurir",
   "private": true,
   "version": "0.0.0",
-  "version": "0.0.0",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
