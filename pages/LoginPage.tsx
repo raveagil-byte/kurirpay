@@ -26,7 +26,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ appName }) => {
       if (viewMode === 'login') {
         await login(email, password);
       } else if (viewMode === 'register') {
-        await register(name, email, password, isAdmin ? Role.ADMIN : Role.COURIER);
+        await register(name, email, password, Role.COURIER);
         alert('Registrasi berhasil! Silakan login.');
         setViewMode('login');
         setPassword('');
@@ -170,14 +170,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ appName }) => {
 
             {viewMode === 'register' && (
               <div className="flex items-center gap-2 mt-2">
-                <input
-                  type="checkbox"
-                  id="isAdmin"
-                  checked={isAdmin}
-                  onChange={(e) => setIsAdmin(e.target.checked)}
-                  className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
-                />
-                <label htmlFor="isAdmin" className="text-sm text-slate-600">Daftar sebagai Admin (Demo)</label>
+                <p className="text-xs text-slate-400">Pendaftaran akun hanya untuk Kurir. Untuk Admin, silakan hubungi manajemen.</p>
               </div>
             )}
           </div>
