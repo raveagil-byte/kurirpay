@@ -33,11 +33,25 @@ export const useUsers = () => {
         fetchUsers();
     }, [fetchUsers]);
 
-    const addUser = async (newUser: User) => {
-        // Registration is handled via AuthContext usually, but admin might add user directly?
-        // backend register endpoint is public, but maybe we need admin-protected add user route
-        // for now let's just refresh.
-        await fetchUsers();
+    const addUser = async (newUser: any) => {
+        try {
+            const response = await fetch(`${API_URL}/api/auth/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newUser)
+            });
+            if (response.ok) {
+                await fetchUsers();
+            } else {
+                const err = await response.json();
+                setError(err.message || 'Gagal membuat user');
+                throw new Error(err.message);
+            }
+        } catch (error: any) {
+            console.error("Add user error:", error);
+            setError(error.message);
+            // Re-throw so UI can catch it?
+        }
     };
 
     const deleteUser = async (id: string) => {

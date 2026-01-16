@@ -738,15 +738,17 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
               e.preventDefault();
               const formData = new FormData(e.currentTarget);
               onAddUser({
-                id: Math.random().toString(36).substr(2, 9),
+                // ID handled by backend
                 name: formData.get('name') as string,
                 email: formData.get('email') as string,
+                password: formData.get('password') as string,
                 role: Role.COURIER
-              });
+              } as any);
               setIsAddingUser(false);
             }} className="space-y-4">
               <div><label className="block text-sm font-bold text-slate-700 mb-1">Nama</label><input required name="name" type="text" className="w-full px-4 py-3 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-600" /></div>
               <div><label className="block text-sm font-bold text-slate-700 mb-1">Email</label><input required name="email" type="email" className="w-full px-4 py-3 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-600" /></div>
+              <div><label className="block text-sm font-bold text-slate-700 mb-1">Password</label><input required name="password" type="text" placeholder="Password untuk login kurir" className="w-full px-4 py-3 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-600" /></div>
               <div className="flex gap-4 pt-4">
                 <button type="button" onClick={() => setIsAddingUser(false)} className="flex-1 py-3 border rounded-xl font-bold">Batal</button>
                 <button type="submit" className="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-bold">Simpan</button>
