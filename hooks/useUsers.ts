@@ -57,7 +57,7 @@ export const useUsers = () => {
     const updateUser = async (updated: User) => {
         try {
             // We need to send only relevant fields, password if changed
-            const response = await fetch(`http://localhost:3000/api/users/${updated.id}`, {
+            const response = await fetch(`${API_URL}/api/users/${updated.id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

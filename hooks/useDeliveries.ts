@@ -15,7 +15,7 @@ export const useDeliveries = () => {
         if (!token) return;
         setLoading(true);
         try {
-            const response = await fetch('http://localhost:3000/api/deliveries', {
+            const response = await fetch(`${API_URL}/api/deliveries`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await response.json();
@@ -39,7 +39,7 @@ export const useDeliveries = () => {
         // Backend handles calculation if we wanted, but for now we send raw details
         // Note: Delivery type interface in frontend might have ID, but creating new one doesnt need it
         try {
-            const response = await fetch('http://localhost:3000/api/deliveries', {
+            const response = await fetch(`${API_URL}/api/deliveries`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
