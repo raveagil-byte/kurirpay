@@ -28,15 +28,18 @@ const Navbar: React.FC<NavbarProps> = ({ user, appName, onLogout, notifications,
             <Link to="/" className={`text-sm font-medium ${location.pathname === '/' ? 'text-indigo-600' : 'text-slate-600'}`}>Beranda</Link>
             <Link to="/profile" className={`text-sm font-medium ${location.pathname === '/profile' ? 'text-indigo-600' : 'text-slate-600'}`}>Profil</Link>
             {user.role === Role.ADMIN && (
-              <Link to="/settings" className={`text-sm font-medium ${location.pathname === '/settings' ? 'text-indigo-600' : 'text-slate-600'}`}>Pengaturan</Link>
+              <>
+                <Link to="/admin/payouts" className={`text-sm font-medium ${location.pathname === '/admin/payouts' ? 'text-indigo-600' : 'text-slate-600'}`}>Gaji</Link>
+                <Link to="/settings" className={`text-sm font-medium ${location.pathname === '/settings' ? 'text-indigo-600' : 'text-slate-600'}`}>Pengaturan</Link>
+              </>
             )}
           </div>
         </div>
-        
+
         <div className="flex items-center gap-4">
           {user.role === Role.ADMIN && (
             <div className="relative">
-              <button 
+              <button
                 onClick={() => setShowNotifs(!showNotifs)}
                 className="p-2 text-slate-400 hover:text-indigo-600 relative transition-colors"
               >
@@ -70,7 +73,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, appName, onLogout, notifications,
                             <p className="text-xs text-slate-500 mt-1 leading-relaxed">{n.message}</p>
                             <div className="flex justify-between items-center mt-3">
                               <span className="text-[9px] text-slate-400">{new Date(n.timestamp).toLocaleTimeString()}</span>
-                              <button 
+                              <button
                                 onClick={() => onMarkRead(n.id)}
                                 className="text-[9px] font-bold text-indigo-600 uppercase"
                               >

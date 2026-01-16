@@ -15,11 +15,13 @@ import authRoutes from './routes/authRoutes';
 import deliveryRoutes from './routes/deliveryRoutes';
 import userRoutes from './routes/userRoutes';
 import settingsRoutes from './routes/settingsRoutes';
+import paymentRoutes from './routes/paymentRoutes';
 
 app.use('/api/auth', authRoutes);
 app.use('/api/deliveries', deliveryRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api/payments', paymentRoutes);
 
 app.get('/', (req, res) => {
     res.send('KurirPay Backend is Running!');

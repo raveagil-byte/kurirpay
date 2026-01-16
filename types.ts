@@ -32,7 +32,19 @@ export interface Delivery {
   totalAmount: number;
   status: DeliveryStatus;
   paymentStatus: PaymentStatus;
+  paymentId?: string;
+  proofPhotoUrl?: string;
   notes?: string;
+}
+
+export interface Payment {
+  id: string;
+  amount: number;
+  date: string;
+  method: string;
+  notes?: string;
+  courierId: string;
+  adminId?: string;
 }
 
 export interface AppNotification {

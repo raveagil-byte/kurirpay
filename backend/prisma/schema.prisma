@@ -35,6 +35,7 @@ model User {
   
   deliveries    Delivery[]
   notifications Notification[]
+  payments      Payment[]     @relation("CourierPayments")
   resetToken       String?
   resetTokenExpiry DateTime?
 }
@@ -47,11 +48,27 @@ model Delivery {
   itemCount     Int
   ratePerItem   Int
   totalAmount   Int
-  status        DeliveryStatus @default(PENDING)
+  status        DeliveryStatus @default(PENDING) // Operational status (Approved by admin?)
   paymentStatus PaymentStatus  @default(UNPAID)
+  paymentId     String?
+  payment       Payment?       @relation(fields: [paymentId], references: [id])
+  proofPhotoUrl String?
   notes         String?
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
+}
+
+model Payment {
+  id        String     @id @default(uuid())
+  amount    Float
+  date      DateTime   @default(now())
+  method    String     @default("CASH") // CASH, TRANSFER
+  notes     String?
+  courierId String
+  courier   User       @relation("CourierPayments", fields: [courierId], references: [id])
+  deliveries Delivery[]
+  adminId   String?    // User ID of admin who processed
+  createdAt DateTime   @default(now())
 }
 
 model Notification {

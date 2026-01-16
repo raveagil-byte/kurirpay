@@ -15,6 +15,7 @@ import { useDeliveries } from './hooks/useDeliveries';
 import LoginPage from './pages/LoginPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminPayouts from './pages/AdminPayouts';
 import CourierDashboard from './pages/CourierDashboard';
 import ProfilePage from './pages/ProfilePage';
 import AdminSettings from './pages/AdminSettings';
@@ -104,6 +105,14 @@ const AppRoutes: React.FC = () => {
                 onResetData={handleResetData}
                 deliveries={deliveries}
               />
+            ) : <Navigate to="/" />
+          }
+        />
+        <Route
+          path="/admin/payouts"
+          element={
+            user.role === Role.ADMIN ? (
+              <AdminPayouts />
             ) : <Navigate to="/" />
           }
         />
