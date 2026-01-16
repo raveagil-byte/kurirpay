@@ -2,7 +2,7 @@
 import React, { useState, useMemo } from 'react';
 import { User, Delivery, Role, DeliveryStatus, PaymentStatus, AppNotification } from '../types.ts';
 import { DELIVERY_RATE, APP_NAME } from '../constants.ts';
-import { getPerformanceInsight } from '../services/geminiService.ts';
+
 
 interface AdminDashboardProps {
   users: User[];
@@ -16,12 +16,12 @@ interface AdminDashboardProps {
   addNotification: (notif: Omit<AppNotification, 'id' | 'timestamp' | 'isRead'>) => void;
 }
 
-const AdminDashboard: React.FC<AdminDashboardProps> = ({ 
-  users, 
-  deliveries, 
+const AdminDashboard: React.FC<AdminDashboardProps> = ({
+  users,
+  deliveries,
   appName,
-  onAddUser, 
-  onDeleteUser, 
+  onAddUser,
+  onDeleteUser,
   onUpdateUser,
   onDeleteDelivery,
   onUpdateDelivery,
@@ -29,11 +29,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'couriers' | 'deliveries' | 'payroll' | 'identitas'>('overview');
   const [isAddingUser, setIsAddingUser] = useState(false);
-  const [insightText, setInsightText] = useState<string | null>(null);
-  const [isLoadingInsight, setIsLoadingInsight] = useState(false);
-  const [selectedCourierForInsight, setSelectedCourierForInsight] = useState<string>("");
+
   const [viewingSignature, setViewingSignature] = useState<User | null>(null);
-  
+
   // Advanced Filter State
   const [filterDateFrom, setFilterDateFrom] = useState<string>("");
   const [filterDateTo, setFilterDateTo] = useState<string>("");
@@ -55,7 +53,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
     const totalItems = approvedDeliveries.reduce((sum, d) => sum + d.itemCount, 0);
     const totalEarnings = approvedDeliveries.reduce((sum, d) => sum + d.totalAmount, 0);
     const courierCount = users.filter(u => u.role === Role.COURIER).length;
-    
+
     // Status Breakdown
     const pendingCount = deliveries.filter(d => d.status === DeliveryStatus.PENDING).length;
     const approvedCount = deliveries.filter(d => d.status === DeliveryStatus.APPROVED).length;
@@ -65,14 +63,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
       .filter(d => d.status === DeliveryStatus.APPROVED && d.paymentStatus !== PaymentStatus.PAID)
       .reduce((sum, d) => sum + d.totalAmount, 0);
 
-    return { 
-      totalItems, 
-      totalEarnings, 
-      courierCount, 
-      pendingCount, 
+    return {
+      totalItems,
+      totalEarnings,
+      courierCount,
+      pendingCount,
       approvedCount,
       rejectedCount,
-      unpaidEarnings 
+      unpaidEarnings
     };
   }, [deliveries, users]);
 
@@ -84,9 +82,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
       const matchMinPkg = filterMinPkg ? d.itemCount >= parseInt(filterMinPkg) : true;
       const matchMaxPkg = filterMaxPkg ? d.itemCount <= parseInt(filterMaxPkg) : true;
       const matchCourier = filterCourierId === 'ALL' ? true : d.courierId === filterCourierId;
-      
+
       return matchDateFrom && matchDateTo && matchPayment && matchMinPkg && matchMaxPkg && matchCourier;
-    }).sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }, [deliveries, filterDateFrom, filterDateTo, filterPaymentStatus, filterMinPkg, filterMaxPkg, filterCourierId]);
 
   const courierStats = useMemo(() => {
@@ -103,7 +101,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
         const uDeliveries = deliveries.filter(d => d.courierId === u.id && d.status === DeliveryStatus.APPROVED);
         const totalItems = uDeliveries.reduce((sum, d) => sum + d.itemCount, 0);
         const totalEarnings = uDeliveries.reduce((sum, d) => sum + d.totalAmount, 0);
-        
+
         const unpaidDeliveries = uDeliveries.filter(d => d.paymentStatus !== PaymentStatus.PAID);
         const unpaidAmount = unpaidDeliveries.reduce((sum, d) => sum + d.totalAmount, 0);
         const hasPayoutRequest = unpaidDeliveries.some(d => d.paymentStatus === PaymentStatus.PENDING_REQUEST);
@@ -112,15 +110,15 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
         const weeklyItems = weeklyDeliveries.reduce((sum, d) => sum + d.itemCount, 0);
         const weeklyEarnings = weeklyDeliveries.reduce((sum, d) => sum + d.totalAmount, 0);
 
-        return { 
-          ...u, 
-          totalItems, 
-          totalEarnings, 
-          weeklyItems, 
-          weeklyEarnings, 
-          unpaidAmount, 
+        return {
+          ...u,
+          totalItems,
+          totalEarnings,
+          weeklyItems,
+          weeklyEarnings,
+          unpaidAmount,
           hasPayoutRequest,
-          unpaidDeliveriesCount: unpaidDeliveries.length 
+          unpaidDeliveriesCount: unpaidDeliveries.length
         };
       });
   }, [users, deliveries]);
@@ -145,11 +143,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
     const { courier } = paymentModalData;
     const unpaid = deliveries.filter(d => d.courierId === courier.id && d.status === DeliveryStatus.APPROVED && d.paymentStatus !== PaymentStatus.PAID);
-    
+
     unpaid.forEach(d => {
       onUpdateDelivery({ ...d, paymentStatus: PaymentStatus.PAID });
     });
-    
+
     addNotification({
       userId: 'admin',
       title: 'Pembayaran Selesai',
@@ -195,7 +193,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
             <h1 className="text-4xl font-black tracking-tighter text-slate-900 mb-1">{appName}</h1>
             <p className="text-sm font-bold uppercase tracking-widest text-slate-500">Laporan Bukti Pengiriman Harian</p>
           </div>
-          
+
           <div className="grid grid-cols-2 gap-8 mb-10">
             <div>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">ID Transaksi</p>
@@ -254,9 +252,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
               <div className="border-b border-slate-900 pb-2 font-bold uppercase tracking-widest">SISTEM {appName}</div>
             </div>
           </div>
-          
+
           <div className="mt-20 text-center">
-             <p className="text-[9px] text-slate-400 uppercase font-bold italic">Laporan ini dihasilkan secara otomatis oleh sistem KurirPay dan merupakan dokumen sah internal.</p>
+            <p className="text-[9px] text-slate-400 uppercase font-bold italic">Laporan ini dihasilkan secara otomatis oleh sistem KurirPay dan merupakan dokumen sah internal.</p>
           </div>
         </div>
       )}
@@ -269,7 +267,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
         <div className="flex flex-wrap gap-2">
           <div className="flex p-1 bg-slate-100 rounded-lg self-start">
             {['overview', 'couriers', 'deliveries', 'payroll', 'identitas'].map((tab) => (
-              <button 
+              <button
                 key={tab}
                 onClick={() => setActiveTab(tab as any)}
                 className={`px-4 py-2 text-sm font-medium rounded-md transition-all capitalize flex items-center gap-2 ${activeTab === tab ? 'bg-white shadow text-indigo-600' : 'text-slate-600 hover:text-slate-900'}`}
@@ -366,7 +364,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   <td className="px-6 py-4">
                     {courier.hasPayoutRequest ? (
                       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-red-100 text-red-700 rounded-full text-[10px] font-bold uppercase animate-pulse">
-                         Minta Payout
+                        Minta Payout
                       </span>
                     ) : (
                       <span className="text-slate-400 text-xs italic">Belum ada request</span>
@@ -377,14 +375,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     <p className="text-[10px] text-slate-500">{courier.unpaidDeliveriesCount} laporan tertunda</p>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <button 
+                    <button
                       onClick={() => handleOpenPaymentModal(courier)}
                       disabled={courier.unpaidAmount <= 0}
-                      className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
-                        courier.unpaidAmount > 0 
-                        ? 'bg-slate-900 text-white hover:bg-slate-800' 
+                      className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${courier.unpaidAmount > 0
+                        ? 'bg-slate-900 text-white hover:bg-slate-800'
                         : 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                      }`}
+                        }`}
                     >
                       Bayar Sekarang
                     </button>
@@ -415,18 +412,17 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Jumlah Gaji (Rp)</label>
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-slate-400">Rp</span>
-                  <input 
-                    type="number" 
+                  <input
+                    type="number"
                     min="1"
-                    value={manualAmount || ''} 
+                    value={manualAmount || ''}
                     onChange={(e) => {
                       const val = parseInt(e.target.value);
                       setManualAmount(val || 0);
                       if (val > 0) setPaymentError(null);
                     }}
-                    className={`w-full pl-12 pr-4 py-4 border rounded-2xl text-2xl font-bold outline-none transition-all ${
-                      paymentError ? 'border-red-500 ring-4 ring-red-50' : 'border-slate-200 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-50'
-                    }`}
+                    className={`w-full pl-12 pr-4 py-4 border rounded-2xl text-2xl font-bold outline-none transition-all ${paymentError ? 'border-red-500 ring-4 ring-red-50' : 'border-slate-200 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-50'
+                      }`}
                     placeholder="0"
                   />
                 </div>
@@ -435,13 +431,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </div>
 
               <div className="flex gap-4 pt-4">
-                <button 
+                <button
                   onClick={() => setPaymentModalData(null)}
                   className="flex-1 py-4 border border-slate-200 rounded-2xl font-bold text-slate-600 hover:bg-slate-50 transition-colors"
                 >
                   Batal
                 </button>
-                <button 
+                <button
                   onClick={handleConfirmPayment}
                   className="flex-1 py-4 bg-slate-900 text-white rounded-2xl font-bold hover:bg-slate-800 shadow-xl shadow-slate-200 transition-all"
                 >
@@ -528,16 +524,16 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
               <div className="space-y-1.5">
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Rentang Tanggal</label>
                 <div className="flex items-center gap-2">
-                  <input 
-                    type="date" 
-                    value={filterDateFrom} 
+                  <input
+                    type="date"
+                    value={filterDateFrom}
                     onChange={(e) => setFilterDateFrom(e.target.value)}
                     className="flex-1 px-3 py-2 text-xs border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                   <span className="text-slate-300">-</span>
-                  <input 
-                    type="date" 
-                    value={filterDateTo} 
+                  <input
+                    type="date"
+                    value={filterDateTo}
                     onChange={(e) => setFilterDateTo(e.target.value)}
                     className="flex-1 px-3 py-2 text-xs border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500"
                   />
@@ -546,8 +542,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
               <div className="space-y-1.5">
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status Pembayaran</label>
-                <select 
-                  value={filterPaymentStatus} 
+                <select
+                  value={filterPaymentStatus}
                   onChange={(e) => setFilterPaymentStatus(e.target.value as any)}
                   className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
                 >
@@ -561,17 +557,17 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
               <div className="space-y-1.5">
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Jumlah Paket (Min - Max)</label>
                 <div className="flex items-center gap-2">
-                  <input 
-                    type="number" 
+                  <input
+                    type="number"
                     placeholder="Min"
-                    value={filterMinPkg} 
+                    value={filterMinPkg}
                     onChange={(e) => setFilterMinPkg(e.target.value)}
                     className="flex-1 px-3 py-2 text-xs border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500"
                   />
-                  <input 
-                    type="number" 
+                  <input
+                    type="number"
                     placeholder="Max"
-                    value={filterMaxPkg} 
+                    value={filterMaxPkg}
                     onChange={(e) => setFilterMaxPkg(e.target.value)}
                     className="flex-1 px-3 py-2 text-xs border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500"
                   />
@@ -580,8 +576,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
               <div className="space-y-1.5">
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Filter Kurir</label>
-                <select 
-                  value={filterCourierId} 
+                <select
+                  value={filterCourierId}
                   onChange={(e) => setFilterCourierId(e.target.value)}
                   className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
                 >
@@ -593,7 +589,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </div>
             </div>
             <div className="flex justify-end">
-              <button 
+              <button
                 onClick={clearFilters}
                 className="text-[10px] font-bold text-slate-400 uppercase hover:text-red-500 transition-colors flex items-center gap-1"
               >
@@ -604,7 +600,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </button>
             </div>
           </div>
-          
+
           <div className="bg-white rounded-3xl border shadow-sm overflow-hidden">
             <table className="w-full text-left">
               <thead className="bg-slate-50 text-slate-500 text-[10px] font-bold uppercase tracking-wider">
@@ -639,11 +635,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           <p className="text-sm font-bold text-indigo-600">Rp {d.totalAmount.toLocaleString('id-ID')}</p>
                         </td>
                         <td className="px-6 py-4 text-center">
-                          <span className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${
-                            d.status === DeliveryStatus.APPROVED ? 'bg-green-50 text-green-700 border-green-100' :
-                            d.status === DeliveryStatus.REJECTED ? 'bg-red-50 text-red-700 border-red-100' : 
-                            'bg-amber-50 text-amber-700 border-amber-100 animate-pulse'
-                          }`}>
+                          <span className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${d.status === DeliveryStatus.APPROVED ? 'bg-green-50 text-green-700 border-green-100' :
+                            d.status === DeliveryStatus.REJECTED ? 'bg-red-50 text-red-700 border-red-100' :
+                              'bg-amber-50 text-amber-700 border-amber-100 animate-pulse'
+                            }`}>
                             {d.status === DeliveryStatus.PENDING ? 'Tertunda' : d.status === DeliveryStatus.APPROVED ? 'Disetujui' : 'Ditolak'}
                           </span>
                         </td>
@@ -656,10 +651,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                               </div>
                             ) : (
                               <div className="flex items-center gap-3">
-                                 <p className="text-[10px] text-slate-400 italic max-w-[120px] truncate">
+                                <p className="text-[10px] text-slate-400 italic max-w-[120px] truncate">
                                   {d.notes || 'No notes'}
                                 </p>
-                                <button 
+                                <button
                                   onClick={() => handlePrintSingle(d)}
                                   className="px-3 py-1.5 bg-slate-100 text-slate-600 hover:bg-indigo-600 hover:text-white rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all flex items-center gap-1.5"
                                 >
@@ -710,7 +705,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 VERIFIED BY KURIRPAY SYSTEM
               </span>
             </div>
-            
+
             <div className="p-4 bg-slate-50 rounded-2xl mb-6">
               <img src={getSignatureUrl(viewingSignature)} alt="QR" className="w-48 h-48 mx-auto" />
             </div>

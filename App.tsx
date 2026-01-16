@@ -114,13 +114,13 @@ const AppRoutes: React.FC = () => {
 const App: React.FC = () => {
   return (
     <HashRouter>
-      <SettingsProvider>
-        <AuthProvider>
+      <AuthProvider>
+        <SettingsProvider>
           <NotificationProvider>
             <AppRoutes />
           </NotificationProvider>
-        </AuthProvider>
-      </SettingsProvider>
+        </SettingsProvider>
+      </AuthProvider>
     </HashRouter>
   );
 };
