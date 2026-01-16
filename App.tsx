@@ -13,6 +13,7 @@ import { useDeliveries } from './hooks/useDeliveries';
 
 // Components & Pages
 import LoginPage from './pages/LoginPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 import AdminDashboard from './pages/AdminDashboard';
 import CourierDashboard from './pages/CourierDashboard';
 import ProfilePage from './pages/ProfilePage';
@@ -47,6 +48,7 @@ const AppRoutes: React.FC = () => {
             appName={settings.appName}
           />
         } />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
     );

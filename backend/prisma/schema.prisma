@@ -35,6 +35,8 @@ model User {
   
   deliveries    Delivery[]
   notifications Notification[]
+  resetToken       String?
+  resetTokenExpiry DateTime?
 }
 
 model Delivery {
