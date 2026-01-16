@@ -1,0 +1,5 @@
+{
+  "name": "KurirPay - Sistem Pengajian Kurir",
+  "description": "Aplikasi manajemen pengajian harian untuk kurir toko online dengan fitur rekapitulasi mingguan/bulanan, perhitungan otomatis (Rp 3.000 per paket), dan sistem RBAC (Role-Based Access Control).",
+  "requestFramePermissions": []
+}
