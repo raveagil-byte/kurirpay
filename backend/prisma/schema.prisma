@@ -39,6 +39,7 @@ model User {
   payments      Payment[]     @relation("CourierPayments")
   resetToken       String?
   resetTokenExpiry DateTime?
+  auditLogs        AuditLog[]
 }
 
 model Delivery {
