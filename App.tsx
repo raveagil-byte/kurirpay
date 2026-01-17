@@ -88,7 +88,6 @@ const AppRoutes: React.FC = () => {
                 onDeleteUser={deleteUser}
 
                 onUpdateDelivery={updateDelivery}
-                addNotification={addNotification}
               />
             ) : (
               <CourierDashboard

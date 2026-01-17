@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { toast } from 'sonner';
-import { User, Delivery, Role, DeliveryStatus, PaymentStatus, AppNotification } from '../types.ts';
+import { User, Delivery, Role, DeliveryStatus, PaymentStatus } from '../types.ts';
 import { useAuditLogs } from '../hooks/useAuditLogs';
 import { API_URL } from '../config';
 import { useAuth } from '../contexts/AuthContext';
@@ -13,7 +13,6 @@ interface AdminDashboardProps {
   onAddUser: (user: User) => void;
   onDeleteUser: (id: string) => void;
   onUpdateDelivery: (delivery: Delivery) => void;
-  addNotification: (notif: Omit<AppNotification, 'id' | 'timestamp' | 'isRead'>) => void;
 }
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({
@@ -22,8 +21,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
   appName,
   onAddUser,
   onDeleteUser,
-  onUpdateDelivery,
-  addNotification
+  onUpdateDelivery // Removed addNotification
 }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'couriers' | 'deliveries' | 'payroll' | 'identitas' | 'audit_logs'>('overview');
   const [isAddingUser, setIsAddingUser] = useState(false);
