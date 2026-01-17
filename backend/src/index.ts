@@ -23,6 +23,12 @@ app.use('/api/users', userRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/payments', paymentRoutes);
 
+// Global Error Handler
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    console.error(err);
+    res.status(500).json({ message: 'Internal Server Error', error: err.message });
+});
+
 app.get('/', (req, res) => {
     res.send('KurirPay Backend is Running!');
 });
