@@ -25,6 +25,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'couriers' | 'deliveries' | 'payroll' | 'identitas' | 'audit_logs'>('overview');
   const [isAddingUser, setIsAddingUser] = useState(false);
+  const [bonusAmount, setBonusAmount] = useState(0);
+  const [deductionAmount, setDeductionAmount] = useState(0);
 
   const { logs: auditLogs, fetchLogs, loading: loadingLogs, meta: logsMeta } = useAuditLogs();
 
@@ -478,24 +480,60 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     placeholder="0"
                   />
                 </div>
-                {paymentError && <p className="text-red-500 text-[10px] font-bold mt-2 uppercase tracking-tighter">{paymentError}</p>}
-                <p className="text-[10px] text-slate-500 mt-2 italic">* Terkalkulasi sistem: Rp {paymentModalData.amount.toLocaleString('id-ID')}</p>
               </div>
 
-              <div className="flex gap-4 pt-4">
-                <button
-                  onClick={() => setPaymentModalData(null)}
-                  className="flex-1 py-4 border border-slate-200 rounded-2xl font-bold text-slate-600 hover:bg-slate-50 transition-colors"
-                >
-                  Batal
-                </button>
-                <button
-                  onClick={handleConfirmPayment}
-                  className="flex-1 py-4 bg-slate-900 text-white rounded-2xl font-bold hover:bg-slate-800 shadow-xl shadow-slate-200 transition-all"
-                >
-                  Konfirmasi Bayar
-                </button>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Bonus (Opsional)</label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-xs">Rp</span>
+                    <input
+                      type="number"
+                      min="0"
+                      value={bonusAmount || ''}
+                      onChange={(e) => setBonusAmount(parseInt(e.target.value) || 0)}
+                      className="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-green-500 focus:ring-2 focus:ring-green-50"
+                      placeholder="0"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Potongan (Opsional)</label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-xs">Rp</span>
+                    <input
+                      type="number"
+                      min="0"
+                      value={deductionAmount || ''}
+                      onChange={(e) => setDeductionAmount(parseInt(e.target.value) || 0)}
+                      className="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-red-500 focus:ring-2 focus:ring-red-50"
+                      placeholder="0"
+                    />
+                  </div>
+                </div>
               </div>
+
+              <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 flex justify-between items-center">
+                <span className="text-xs font-bold text-slate-500 uppercase">Total Transfer</span>
+                <span className="text-lg font-black text-indigo-600">Rp {(manualAmount + bonusAmount - deductionAmount).toLocaleString('id-ID')}</span>
+              </div>
+              {paymentError && <p className="text-red-500 text-[10px] font-bold mt-2 uppercase tracking-tighter">{paymentError}</p>}
+              <p className="text-[10px] text-slate-500 mt-2 italic">* Terkalkulasi sistem: Rp {paymentModalData.amount.toLocaleString('id-ID')}</p>
+            </div>
+
+            <div className="flex gap-4 pt-4">
+              <button
+                onClick={() => setPaymentModalData(null)}
+                className="flex-1 py-4 border border-slate-200 rounded-2xl font-bold text-slate-600 hover:bg-slate-50 transition-colors"
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleConfirmPayment}
+                className="flex-1 py-4 bg-slate-900 text-white rounded-2xl font-bold hover:bg-slate-800 shadow-xl shadow-slate-200 transition-all"
+              >
+                Konfirmasi Bayar
+              </button>
             </div>
           </div>
         </div>
@@ -596,317 +634,328 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </div>
           </div>
         </div>
-      )}
+      )
+      }
 
-      {activeTab === 'couriers' && (
-        <div className="bg-white rounded-2xl shadow-sm border overflow-hidden no-print">
-          <div className="p-6 border-b flex justify-between items-center">
-            <h2 className="text-xl font-bold text-slate-900">Manajemen Kurir</h2>
-            <button onClick={() => setIsAddingUser(true)} className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-bold">+ Tambah Kurir</button>
-          </div>
-          <table className="w-full text-left">
-            <thead className="bg-slate-50 text-slate-500 text-[10px] font-bold uppercase tracking-wider">
-              <tr>
-                <th className="px-6 py-4">Informasi Kurir</th>
-                <th className="px-6 py-4">Performa Minggu Ini</th>
-                <th className="px-6 py-4">Akumulasi Total</th>
-                <th className="px-6 py-4 text-right">Aksi</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {courierStats.map((courier) => (
-                <tr key={courier.id} className="hover:bg-slate-50 group">
-                  <td className="px-6 py-4">
-                    <p className="font-bold text-slate-900">{courier.name}</p>
-                    <p className="text-xs text-slate-500">{courier.email}</p>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-medium text-slate-600">Paket:</span>
-                        <span className="text-sm font-bold text-indigo-600">{courier.weeklyItems} Pkt</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-medium text-slate-600">Gaji:</span>
-                        <span className="text-sm font-bold text-green-600">Rp {courier.weeklyEarnings.toLocaleString('id-ID')}</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="space-y-1">
-                      <p className="text-xs text-slate-600">{courier.totalItems} Paket Total</p>
-                      <p className="text-sm font-bold text-slate-900">Rp {courier.totalEarnings.toLocaleString('id-ID')}</p>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex flex-col items-end gap-1">
-                      <button onClick={() => setViewingSignature(courier)} className="text-indigo-600 text-[10px] font-bold uppercase tracking-tighter hover:underline">Verifikasi QR</button>
-                      <button onClick={() => onDeleteUser(courier.id)} className="text-red-400 hover:text-red-600 text-[10px] font-bold uppercase tracking-tighter">Hapus</button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {activeTab === 'deliveries' && (
-        <div className="space-y-6 no-print">
-          <div className="bg-indigo-900 text-white p-6 rounded-3xl flex justify-between items-center shadow-lg">
-            <div>
-              <h2 className="text-xl font-bold">Detail Riwayat Pengiriman</h2>
-              <p className="text-indigo-200 text-xs">Menampilkan {filteredDeliveries.length} dari {deliveries.length} laporan.</p>
+      {
+        activeTab === 'couriers' && (
+          <div className="bg-white rounded-2xl shadow-sm border overflow-hidden no-print">
+            <div className="p-6 border-b flex justify-between items-center">
+              <h2 className="text-xl font-bold text-slate-900">Manajemen Kurir</h2>
+              <button onClick={() => setIsAddingUser(true)} className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-bold">+ Tambah Kurir</button>
             </div>
-            <button onClick={() => window.print()} className="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl text-xs font-bold transition-all border border-white/20">Export Laporan</button>
-          </div>
-
-          {/* Advanced Filter UI */}
-          <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-6">
-            <div className="flex items-center gap-2 text-indigo-600 font-bold text-sm">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-              </svg>
-              Filter Laporan Lanjutan
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Rentang Tanggal</label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="date"
-                    value={filterDateFrom}
-                    onChange={(e) => setFilterDateFrom(e.target.value)}
-                    className="flex-1 px-3 py-2 text-xs border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500"
-                  />
-                  <span className="text-slate-300">-</span>
-                  <input
-                    type="date"
-                    value={filterDateTo}
-                    onChange={(e) => setFilterDateTo(e.target.value)}
-                    className="flex-1 px-3 py-2 text-xs border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status Pembayaran</label>
-                <select
-                  value={filterPaymentStatus}
-                  onChange={(e) => setFilterPaymentStatus(e.target.value as any)}
-                  className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
-                >
-                  <option value="ALL">Semua Status</option>
-                  <option value={PaymentStatus.UNPAID}>Belum Dibayar</option>
-                  <option value={PaymentStatus.PENDING_REQUEST}>Menunggu Persetujuan</option>
-                  <option value={PaymentStatus.PAID}>Sudah Dibayar</option>
-                </select>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Jumlah Paket (Min - Max)</label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="number"
-                    placeholder="Min"
-                    value={filterMinPkg}
-                    onChange={(e) => setFilterMinPkg(e.target.value)}
-                    className="flex-1 px-3 py-2 text-xs border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500"
-                  />
-                  <input
-                    type="number"
-                    placeholder="Max"
-                    value={filterMaxPkg}
-                    onChange={(e) => setFilterMaxPkg(e.target.value)}
-                    className="flex-1 px-3 py-2 text-xs border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Filter Kurir</label>
-                <select
-                  value={filterCourierId}
-                  onChange={(e) => setFilterCourierId(e.target.value)}
-                  className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
-                >
-                  <option value="ALL">Semua Kurir</option>
-                  {users.filter(u => u.role === Role.COURIER).map(u => (
-                    <option key={u.id} value={u.id}>{u.name}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-            <div className="flex justify-end">
-              <button
-                onClick={clearFilters}
-                className="text-[10px] font-bold text-slate-400 uppercase hover:text-red-500 transition-colors flex items-center gap-1"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                </svg>
-                Bersihkan Filter
-              </button>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-3xl border shadow-sm overflow-hidden">
             <table className="w-full text-left">
               <thead className="bg-slate-50 text-slate-500 text-[10px] font-bold uppercase tracking-wider">
                 <tr>
-                  <th className="px-6 py-4">Tanggal</th>
-                  <th className="px-6 py-4">Kurir</th>
-                  <th className="px-6 py-4 text-center">Paket</th>
-                  <th className="px-6 py-4">Total Nilai</th>
-                  <th className="px-6 py-4 text-center">Status Laporan</th>
-                  <th className="px-6 py-4 text-right">Validasi / Catatan</th>
+                  <th className="px-6 py-4">Informasi Kurir</th>
+                  <th className="px-6 py-4">Performa Minggu Ini</th>
+                  <th className="px-6 py-4">Akumulasi Total</th>
+                  <th className="px-6 py-4 text-right">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {filteredDeliveries.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="px-6 py-12 text-center text-slate-400 text-sm italic">
-                      Tidak ada laporan yang sesuai dengan filter Anda.
+                {courierStats.map((courier) => (
+                  <tr key={courier.id} className="hover:bg-slate-50 group">
+                    <td className="px-6 py-4">
+                      <p className="font-bold text-slate-900">{courier.name}</p>
+                      <p className="text-xs text-slate-500">{courier.email}</p>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-medium text-slate-600">Paket:</span>
+                          <span className="text-sm font-bold text-indigo-600">{courier.weeklyItems} Pkt</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-medium text-slate-600">Gaji:</span>
+                          <span className="text-sm font-bold text-green-600">Rp {courier.weeklyEarnings.toLocaleString('id-ID')}</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="space-y-1">
+                        <p className="text-xs text-slate-600">{courier.totalItems} Paket Total</p>
+                        <p className="text-sm font-bold text-slate-900">Rp {courier.totalEarnings.toLocaleString('id-ID')}</p>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex flex-col items-end gap-1">
+                        <button onClick={() => setViewingSignature(courier)} className="text-indigo-600 text-[10px] font-bold uppercase tracking-tighter hover:underline">Verifikasi QR</button>
+                        <button onClick={() => onDeleteUser(courier.id)} className="text-red-400 hover:text-red-600 text-[10px] font-bold uppercase tracking-tighter">Hapus</button>
+                      </div>
                     </td>
                   </tr>
-                ) : (
-                  filteredDeliveries.map((d) => {
-                    const courier = users.find(u => u.id === d.courierId);
-                    return (
-                      <tr key={d.id} className="hover:bg-slate-50 transition-colors">
-                        <td className="px-6 py-4 text-xs font-medium text-slate-600">{new Date(d.date).toLocaleDateString('id-ID', { dateStyle: 'medium' })}</td>
-                        <td className="px-6 py-4">
-                          <p className="font-bold text-slate-900 text-sm">{courier?.name}</p>
-                          <p className="text-[10px] text-slate-400 font-mono">ID: {d.id.toUpperCase()}</p>
-                        </td>
-                        <td className="px-6 py-4 text-center font-black text-slate-900">{d.itemCount}</td>
-                        <td className="px-6 py-4">
-                          <p className="text-sm font-bold text-indigo-600">Rp {d.totalAmount.toLocaleString('id-ID')}</p>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <span className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${d.status === DeliveryStatus.APPROVED ? 'bg-green-50 text-green-700 border-green-100' :
-                            d.status === DeliveryStatus.REJECTED ? 'bg-red-50 text-red-700 border-red-100' :
-                              'bg-amber-50 text-amber-700 border-amber-100 animate-pulse'
-                            }`}>
-                            {d.status === DeliveryStatus.PENDING ? 'Tertunda' : d.status === DeliveryStatus.APPROVED ? 'Disetujui' : 'Ditolak'}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-right no-print">
-                          <div className="flex flex-col items-end gap-2">
-                            {d.status === DeliveryStatus.PENDING ? (
-                              <div className="flex justify-end gap-2">
-                                <button onClick={() => handleUpdateStatus(d, DeliveryStatus.APPROVED)} className="bg-slate-900 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-tighter">Setujui</button>
-                                <button onClick={() => handleUpdateStatus(d, DeliveryStatus.REJECTED)} className="bg-red-50 text-red-600 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-tighter">Tolak</button>
-                              </div>
-                            ) : (
-                              <div className="flex items-center gap-3">
-                                <p className="text-[10px] text-slate-400 italic max-w-[120px] truncate">
-                                  {d.notes || 'No notes'}
-                                </p>
-                                <button
-                                  onClick={() => handlePrintSingle(d)}
-                                  className="px-3 py-1.5 bg-slate-100 text-slate-600 hover:bg-indigo-600 hover:text-white rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all flex items-center gap-1.5"
-                                >
-                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                                  </svg>
-                                  Cetak
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
+                ))}
               </tbody>
             </table>
           </div>
-        </div>
-      )}
+        )
+      }
 
-      {activeTab === 'identitas' && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 no-print">
-          {users.filter(u => u.role === Role.COURIER).map((courier) => (
-            <div key={courier.id} className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-              <div className="bg-slate-900 p-4 text-center text-white relative">
-                <p className="text-[9px] font-bold uppercase tracking-widest opacity-60 mb-1">KurirPay Verified Pass</p>
-                <h3 className="font-bold truncate px-4 text-sm">{courier.name}</h3>
+      {
+        activeTab === 'deliveries' && (
+          <div className="space-y-6 no-print">
+            <div className="bg-indigo-900 text-white p-6 rounded-3xl flex justify-between items-center shadow-lg">
+              <div>
+                <h2 className="text-xl font-bold">Detail Riwayat Pengiriman</h2>
+                <p className="text-indigo-200 text-xs">Menampilkan {filteredDeliveries.length} dari {deliveries.length} laporan.</p>
               </div>
-              <div className="p-8 text-center space-y-4">
-                <div className="p-2 bg-slate-50 inline-block rounded-2xl border border-slate-100">
-                  <img src={getSignatureUrl(courier)} alt="QR Signature" className="w-40 h-40" />
+              <button onClick={() => window.print()} className="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl text-xs font-bold transition-all border border-white/20">Export Laporan</button>
+            </div>
+
+            {/* Advanced Filter UI */}
+            <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-6">
+              <div className="flex items-center gap-2 text-indigo-600 font-bold text-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                </svg>
+                Filter Laporan Lanjutan
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Rentang Tanggal</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="date"
+                      value={filterDateFrom}
+                      onChange={(e) => setFilterDateFrom(e.target.value)}
+                      className="flex-1 px-3 py-2 text-xs border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                    <span className="text-slate-300">-</span>
+                    <input
+                      type="date"
+                      value={filterDateTo}
+                      onChange={(e) => setFilterDateTo(e.target.value)}
+                      className="flex-1 px-3 py-2 text-xs border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
                 </div>
-                <button onClick={() => handlePrintIdentity(courier)} className="w-full py-2.5 bg-slate-900 text-white rounded-xl text-xs font-bold no-print">Cetak Identitas</button>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status Pembayaran</label>
+                  <select
+                    value={filterPaymentStatus}
+                    onChange={(e) => setFilterPaymentStatus(e.target.value as any)}
+                    className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+                  >
+                    <option value="ALL">Semua Status</option>
+                    <option value={PaymentStatus.UNPAID}>Belum Dibayar</option>
+                    <option value={PaymentStatus.PENDING_REQUEST}>Menunggu Persetujuan</option>
+                    <option value={PaymentStatus.PAID}>Sudah Dibayar</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Jumlah Paket (Min - Max)</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      placeholder="Min"
+                      value={filterMinPkg}
+                      onChange={(e) => setFilterMinPkg(e.target.value)}
+                      className="flex-1 px-3 py-2 text-xs border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                    <input
+                      type="number"
+                      placeholder="Max"
+                      value={filterMaxPkg}
+                      onChange={(e) => setFilterMaxPkg(e.target.value)}
+                      className="flex-1 px-3 py-2 text-xs border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Filter Kurir</label>
+                  <select
+                    value={filterCourierId}
+                    onChange={(e) => setFilterCourierId(e.target.value)}
+                    className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+                  >
+                    <option value="ALL">Semua Kurir</option>
+                    {users.filter(u => u.role === Role.COURIER).map(u => (
+                      <option key={u.id} value={u.id}>{u.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="flex justify-end">
+                <button
+                  onClick={clearFilters}
+                  className="text-[10px] font-bold text-slate-400 uppercase hover:text-red-500 transition-colors flex items-center gap-1"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                  Bersihkan Filter
+                </button>
               </div>
             </div>
-          ))}
-        </div>
-      )}
 
-      {viewingSignature && (
-        <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-md flex items-center justify-center p-4 z-[100] no-print">
-          <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-8 animate-in zoom-in-95 duration-200 text-center">
-            <h3 className="text-xl font-bold mb-2">Digital Signature Pass</h3>
-            <div className="mb-4">
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-green-100 text-green-800 uppercase tracking-widest border border-green-200">
-                VERIFIED BY KURIRPAY SYSTEM
-              </span>
+            <div className="bg-white rounded-3xl border shadow-sm overflow-hidden">
+              <table className="w-full text-left">
+                <thead className="bg-slate-50 text-slate-500 text-[10px] font-bold uppercase tracking-wider">
+                  <tr>
+                    <th className="px-6 py-4">Tanggal</th>
+                    <th className="px-6 py-4">Kurir</th>
+                    <th className="px-6 py-4 text-center">Paket</th>
+                    <th className="px-6 py-4">Total Nilai</th>
+                    <th className="px-6 py-4 text-center">Status Laporan</th>
+                    <th className="px-6 py-4 text-right">Validasi / Catatan</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {filteredDeliveries.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="px-6 py-12 text-center text-slate-400 text-sm italic">
+                        Tidak ada laporan yang sesuai dengan filter Anda.
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredDeliveries.map((d) => {
+                      const courier = users.find(u => u.id === d.courierId);
+                      return (
+                        <tr key={d.id} className="hover:bg-slate-50 transition-colors">
+                          <td className="px-6 py-4 text-xs font-medium text-slate-600">{new Date(d.date).toLocaleDateString('id-ID', { dateStyle: 'medium' })}</td>
+                          <td className="px-6 py-4">
+                            <p className="font-bold text-slate-900 text-sm">{courier?.name}</p>
+                            <p className="text-[10px] text-slate-400 font-mono">ID: {d.id.toUpperCase()}</p>
+                          </td>
+                          <td className="px-6 py-4 text-center font-black text-slate-900">{d.itemCount}</td>
+                          <td className="px-6 py-4">
+                            <p className="text-sm font-bold text-indigo-600">Rp {d.totalAmount.toLocaleString('id-ID')}</p>
+                          </td>
+                          <td className="px-6 py-4 text-center">
+                            <span className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${d.status === DeliveryStatus.APPROVED ? 'bg-green-50 text-green-700 border-green-100' :
+                              d.status === DeliveryStatus.REJECTED ? 'bg-red-50 text-red-700 border-red-100' :
+                                'bg-amber-50 text-amber-700 border-amber-100 animate-pulse'
+                              }`}>
+                              {d.status === DeliveryStatus.PENDING ? 'Tertunda' : d.status === DeliveryStatus.APPROVED ? 'Disetujui' : 'Ditolak'}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-right no-print">
+                            <div className="flex flex-col items-end gap-2">
+                              {d.status === DeliveryStatus.PENDING ? (
+                                <div className="flex justify-end gap-2">
+                                  <button onClick={() => handleUpdateStatus(d, DeliveryStatus.APPROVED)} className="bg-slate-900 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-tighter">Setujui</button>
+                                  <button onClick={() => handleUpdateStatus(d, DeliveryStatus.REJECTED)} className="bg-red-50 text-red-600 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-tighter">Tolak</button>
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-3">
+                                  <p className="text-[10px] text-slate-400 italic max-w-[120px] truncate">
+                                    {d.notes || 'No notes'}
+                                  </p>
+                                  <button
+                                    onClick={() => handlePrintSingle(d)}
+                                    className="px-3 py-1.5 bg-slate-100 text-slate-600 hover:bg-indigo-600 hover:text-white rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all flex items-center gap-1.5"
+                                  >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                    </svg>
+                                    Cetak
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
             </div>
-
-            <div className="p-4 bg-slate-50 rounded-2xl mb-6">
-              <img src={getSignatureUrl(viewingSignature)} alt="QR" className="w-48 h-48 mx-auto" />
-            </div>
-
-            <div className="space-y-3 mb-6 text-left border-t border-slate-100 pt-4">
-              <div className="flex flex-col">
-                <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Courier Name</span>
-                <span className="text-xs font-bold text-slate-900">{viewingSignature.name}</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Unique Identity ID</span>
-                <span className="text-xs font-mono font-bold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded self-start">KP-U-{viewingSignature.id.toUpperCase()}</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Last Verification Timestamp</span>
-                <span className="text-[10px] font-medium text-slate-900">{new Date().toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'medium' })}</span>
-              </div>
-            </div>
-
-            <button onClick={() => setViewingSignature(null)} className="w-full py-3.5 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-colors shadow-lg">Tutup Jendela</button>
           </div>
-        </div>
-      )}
+        )
+      }
 
-      {isAddingUser && (
-        <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center p-4 z-[100] no-print">
-          <div className="bg-white rounded-3xl shadow-xl max-w-md w-full p-8 animate-in zoom-in-95 duration-200">
-            <h3 className="text-xl font-bold mb-6 text-slate-900">Tambah Kurir Baru</h3>
-            <form onSubmit={(e) => {
-              e.preventDefault();
-              const formData = new FormData(e.currentTarget);
-              onAddUser({
-                // ID handled by backend
-                name: formData.get('name') as string,
-                email: formData.get('email') as string,
-                password: formData.get('password') as string,
-                role: Role.COURIER
-              } as any);
-              setIsAddingUser(false);
-            }} className="space-y-4">
-              <div><label className="block text-sm font-bold text-slate-700 mb-1">Nama</label><input required name="name" type="text" className="w-full px-4 py-3 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-600" /></div>
-              <div><label className="block text-sm font-bold text-slate-700 mb-1">Email</label><input required name="email" type="email" className="w-full px-4 py-3 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-600" /></div>
-              <div><label className="block text-sm font-bold text-slate-700 mb-1">Password</label><input required name="password" type="text" placeholder="Password untuk login kurir" className="w-full px-4 py-3 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-600" /></div>
-              <div className="flex gap-4 pt-4">
-                <button type="button" onClick={() => setIsAddingUser(false)} className="flex-1 py-3 border rounded-xl font-bold">Batal</button>
-                <button type="submit" className="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-bold">Simpan</button>
+      {
+        activeTab === 'identitas' && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 no-print">
+            {users.filter(u => u.role === Role.COURIER).map((courier) => (
+              <div key={courier.id} className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                <div className="bg-slate-900 p-4 text-center text-white relative">
+                  <p className="text-[9px] font-bold uppercase tracking-widest opacity-60 mb-1">KurirPay Verified Pass</p>
+                  <h3 className="font-bold truncate px-4 text-sm">{courier.name}</h3>
+                </div>
+                <div className="p-8 text-center space-y-4">
+                  <div className="p-2 bg-slate-50 inline-block rounded-2xl border border-slate-100">
+                    <img src={getSignatureUrl(courier)} alt="QR Signature" className="w-40 h-40" />
+                  </div>
+                  <button onClick={() => handlePrintIdentity(courier)} className="w-full py-2.5 bg-slate-900 text-white rounded-xl text-xs font-bold no-print">Cetak Identitas</button>
+                </div>
               </div>
-            </form>
+            ))}
           </div>
-        </div>
-      )}
-    </div>
+        )
+      }
+
+      {
+        viewingSignature && (
+          <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-md flex items-center justify-center p-4 z-[100] no-print">
+            <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-8 animate-in zoom-in-95 duration-200 text-center">
+              <h3 className="text-xl font-bold mb-2">Digital Signature Pass</h3>
+              <div className="mb-4">
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-green-100 text-green-800 uppercase tracking-widest border border-green-200">
+                  VERIFIED BY KURIRPAY SYSTEM
+                </span>
+              </div>
+
+              <div className="p-4 bg-slate-50 rounded-2xl mb-6">
+                <img src={getSignatureUrl(viewingSignature)} alt="QR" className="w-48 h-48 mx-auto" />
+              </div>
+
+              <div className="space-y-3 mb-6 text-left border-t border-slate-100 pt-4">
+                <div className="flex flex-col">
+                  <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Courier Name</span>
+                  <span className="text-xs font-bold text-slate-900">{viewingSignature.name}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Unique Identity ID</span>
+                  <span className="text-xs font-mono font-bold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded self-start">KP-U-{viewingSignature.id.toUpperCase()}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Last Verification Timestamp</span>
+                  <span className="text-[10px] font-medium text-slate-900">{new Date().toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'medium' })}</span>
+                </div>
+              </div>
+
+              <button onClick={() => setViewingSignature(null)} className="w-full py-3.5 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-colors shadow-lg">Tutup Jendela</button>
+            </div>
+          </div>
+        )
+      }
+
+      {
+        isAddingUser && (
+          <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center p-4 z-[100] no-print">
+            <div className="bg-white rounded-3xl shadow-xl max-w-md w-full p-8 animate-in zoom-in-95 duration-200">
+              <h3 className="text-xl font-bold mb-6 text-slate-900">Tambah Kurir Baru</h3>
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                const formData = new FormData(e.currentTarget);
+                onAddUser({
+                  // ID handled by backend
+                  name: formData.get('name') as string,
+                  email: formData.get('email') as string,
+                  password: formData.get('password') as string,
+                  role: Role.COURIER
+                } as any);
+                setIsAddingUser(false);
+              }} className="space-y-4">
+                <div><label className="block text-sm font-bold text-slate-700 mb-1">Nama</label><input required name="name" type="text" className="w-full px-4 py-3 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-600" /></div>
+                <div><label className="block text-sm font-bold text-slate-700 mb-1">Email</label><input required name="email" type="email" className="w-full px-4 py-3 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-600" /></div>
+                <div><label className="block text-sm font-bold text-slate-700 mb-1">Password</label><input required name="password" type="text" placeholder="Password untuk login kurir" className="w-full px-4 py-3 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-600" /></div>
+                <div className="flex gap-4 pt-4">
+                  <button type="button" onClick={() => setIsAddingUser(false)} className="flex-1 py-3 border rounded-xl font-bold">Batal</button>
+                  <button type="submit" className="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-bold">Simpan</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )
+      }
+    </div >
   );
 };
 
