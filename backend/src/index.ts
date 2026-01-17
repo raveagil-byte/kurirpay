@@ -8,6 +8,9 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;
 
+// Essential for Vercel/Proxy environments to ensure req.ip is correct for Rate Limiting
+app.set('trust proxy', 1);
+
 // CORS Configuration
 const allowedOrigins = [
     process.env.APP_URL,
