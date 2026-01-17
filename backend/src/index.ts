@@ -64,16 +64,7 @@ import deliveryRoutes from './routes/deliveryRoutes';
 import userRoutes from './routes/userRoutes';
 import settingsRoutes from './routes/settingsRoutes';
 import paymentRoutes from './routes/paymentRoutes';
-
-// Apply limiters
-app.use('/api/', apiLimiter);
-app.use('/api/auth', authLimiter); // Stricter limit overrides general? No, middleware chain. But usually specific first.
-// Actually, if we put apiLimiter on /api/, it applies to everything. 
-// We want auth to be stricter. Let's apply authLimiter specifically to auth routes *before* generic if possible, or just on the route itself.
-// Express middleware runs in order.
-
-app.use('/api/auth', authRoutes); // Auth limiter could be inside route file or here.
-// Let's modify the route definitions below to use limiters more granularly or just global generic.
+import auditLogRoutes from './routes/auditLogRoutes';
 
 // Re-structure application of middleware:
 app.use('/api/auth', authLimiter, authRoutes);
@@ -81,6 +72,7 @@ app.use('/api/deliveries', deliveryRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/audit-logs', auditLogRoutes);
 
 // Global Error Handler
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
