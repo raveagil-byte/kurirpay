@@ -38,7 +38,7 @@ export const sendResetEmail = async (email: string, token: string) => {
         const resetUrl = `${appUrl}/#/reset-password?token=${token}`;
 
         const info = await transporter.sendMail({
-            from: '"KurirPay Support" <support@kurirpay.com>',
+            from: `"KurirPay Support" <${process.env.SMTP_USER}>`,
             to: email,
             subject: 'Reset Password - KurirPay',
             html: `

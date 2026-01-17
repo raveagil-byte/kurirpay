@@ -1,8 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
 import { User, Delivery, Role, DeliveryStatus, PaymentStatus, AppNotification } from '../types.ts';
-import { DELIVERY_RATE, APP_NAME } from '../constants.ts';
-
 
 interface AdminDashboardProps {
   users: User[];
@@ -10,8 +8,6 @@ interface AdminDashboardProps {
   appName: string;
   onAddUser: (user: User) => void;
   onDeleteUser: (id: string) => void;
-  onUpdateUser: (user: User) => void;
-  onDeleteDelivery: (id: string) => void;
   onUpdateDelivery: (delivery: Delivery) => void;
   addNotification: (notif: Omit<AppNotification, 'id' | 'timestamp' | 'isRead'>) => void;
 }
@@ -22,8 +18,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
   appName,
   onAddUser,
   onDeleteUser,
-  onUpdateUser,
-  onDeleteDelivery,
   onUpdateDelivery,
   addNotification
 }) => {

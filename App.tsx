@@ -30,7 +30,7 @@ const AppRoutes: React.FC = () => {
     deliveries,
     addDelivery,
     updateDelivery,
-    deleteDelivery,
+
     clearDeliveries
   } = useDeliveries();
   const { addNotification, clearAll: clearNotifications } = useNotifications();
@@ -68,8 +68,7 @@ const AppRoutes: React.FC = () => {
                 appName={settings.appName}
                 onAddUser={addUser}
                 onDeleteUser={deleteUser}
-                onUpdateUser={updateUser}
-                onDeleteDelivery={deleteDelivery}
+
                 onUpdateDelivery={updateDelivery}
                 addNotification={addNotification}
               />
