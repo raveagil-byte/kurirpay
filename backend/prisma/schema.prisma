@@ -63,6 +63,8 @@ model Delivery {
 model Payment {
   id        String     @id @default(uuid())
   amount    Float
+  bonus     Float      @default(0)
+  deduction Float      @default(0)
   date      DateTime   @default(now())
   method    String     @default("CASH") // CASH, TRANSFER
   notes     String?

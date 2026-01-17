@@ -19,7 +19,7 @@ export const getUnpaidDeliveries = async (req: Request, res: Response) => {
 };
 
 export const createPayout = async (req: Request, res: Response) => {
-    const { courierId, deliveryIds, amount, method, notes } = req.body;
+    const { courierId, deliveryIds, amount, method, notes, bonus = 0, deduction = 0 } = req.body;
     const adminUser = (req as any).user;
 
     try {
@@ -39,12 +39,15 @@ export const createPayout = async (req: Request, res: Response) => {
                 throw new Error("Data mismatch: Some deliveries might have been paid already.");
             }
 
-            const calculatedTotal = deliveries.reduce((acc: number, curr: any) => acc + curr.totalAmount, 0);
+            const baseTotal = deliveries.reduce((acc: number, curr: any) => acc + curr.totalAmount, 0);
+            const finalAmount = baseTotal + Number(bonus) - Number(deduction);
 
             const payment = await tx.payment.create({
                 data: {
                     courierId,
-                    amount: calculatedTotal,
+                    amount: finalAmount,
+                    bonus: Number(bonus),
+                    deduction: Number(deduction),
                     method,
                     notes,
                     adminId: adminUser.userId
@@ -59,15 +62,14 @@ export const createPayout = async (req: Request, res: Response) => {
                 }
             });
 
-            // In-transaction Audit Log (if using same prisma instance, but tx instance needs to be passed if we want atomic)
-            // Use tx.auditLog.create to ensure it rolls back if payment fails
+            // In-transaction Audit Log
             await tx.auditLog.create({
                 data: {
                     userId: adminUser.userId,
                     action: 'CREATE_PAYOUT',
                     entity: 'Payment',
                     entityId: payment.id,
-                    details: JSON.stringify({ amount: calculatedTotal, count: deliveries.length, method }),
+                    details: JSON.stringify({ base: baseTotal, bonus, deduction, total: finalAmount, count: deliveries.length, method }),
                     ipAddress: req.ip
                 }
             });
@@ -77,7 +79,7 @@ export const createPayout = async (req: Request, res: Response) => {
                 data: {
                     userId: courierId,
                     title: 'Pembayaran Gaji Diterima',
-                    message: `Gaji sebesar Rp ${calculatedTotal.toLocaleString('id-ID')} telah dibayarkan via ${method}.`,
+                    message: `Gaji sebesar Rp ${finalAmount.toLocaleString('id-ID')} telah dibayarkan via ${method}.`,
                     type: 'SUCCESS',
                     isRead: false
                 }

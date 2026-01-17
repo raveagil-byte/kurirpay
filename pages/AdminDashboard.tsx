@@ -3,6 +3,8 @@ import React, { useState, useMemo } from 'react';
 import { toast } from 'sonner';
 import { User, Delivery, Role, DeliveryStatus, PaymentStatus, AppNotification } from '../types.ts';
 import { useAuditLogs } from '../hooks/useAuditLogs';
+import { API_URL } from '../config';
+import { useAuth } from '../contexts/AuthContext';
 
 interface AdminDashboardProps {
   users: User[];
@@ -27,6 +29,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [isAddingUser, setIsAddingUser] = useState(false);
   const [bonusAmount, setBonusAmount] = useState(0);
   const [deductionAmount, setDeductionAmount] = useState(0);
+
+  const { token } = useAuth();
 
   const { logs: auditLogs, fetchLogs, loading: loadingLogs, meta: logsMeta } = useAuditLogs();
 
@@ -148,9 +152,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setPaymentError(null);
   };
 
-  const handleConfirmPayment = () => {
-    if (manualAmount <= 0) {
-      setPaymentError("Jumlah gaji harus lebih besar dari 0.");
+  const handleConfirmPayment = async () => {
+    const totalTransfer = manualAmount + bonusAmount - deductionAmount;
+
+    if (totalTransfer < 0) {
+      setPaymentError("Total transfer tidak boleh negatif.");
       return;
     }
 
@@ -159,20 +165,36 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
     const { courier } = paymentModalData;
     const unpaid = deliveries.filter(d => d.courierId === courier.id && d.status === DeliveryStatus.APPROVED && d.paymentStatus !== PaymentStatus.PAID);
 
-    unpaid.forEach(d => {
-      onUpdateDelivery({ ...d, paymentStatus: PaymentStatus.PAID });
-    });
+    try {
+      const response = await fetch(`${API_URL}/api/payments/payout`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          courierId: courier.id,
+          deliveryIds: unpaid.map(d => d.id),
+          amount: manualAmount,
+          bonus: bonusAmount,
+          deduction: deductionAmount,
+          method: 'CASH',
+          notes: 'Pembayaran Gaji via Admin Dashboard'
+        })
+      });
 
-    addNotification({
-      userId: 'admin',
-      title: 'Pembayaran Selesai',
-      message: `Gaji untuk ${courier.name} sebesar Rp ${manualAmount.toLocaleString('id-ID')} telah berhasil ditandai sebagai TERBAYAR.`,
-      type: 'SYSTEM'
-    });
-
-    toast.success(`Pembayaran untuk ${courier.name} berhasil dicatat!`);
-
-    setPaymentModalData(null);
+      if (response.ok) {
+        toast.success(`Pembayaran untuk ${courier.name} berhasil!`);
+        setPaymentModalData(null);
+        // Force reload to sync all states (Deliveries, Notifications, Audit Logs)
+        setTimeout(() => window.location.reload(), 1000);
+      } else {
+        const err = await response.json();
+        setPaymentError(err.message || "Pembayaran gagal");
+      }
+    } catch (e) {
+      setPaymentError("Terjadi kesalahan sistem saat menghubungi server.");
+    }
   };
 
   const getSignatureUrl = (user: User) => {
