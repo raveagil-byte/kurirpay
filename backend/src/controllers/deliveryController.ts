@@ -100,12 +100,23 @@ export const createDelivery = async (req: Request, res: Response) => {
 export const updateDelivery = async (req: Request, res: Response) => {
     const { id } = req.params;
     const data = req.body;
+    const user = (req as any).user;
 
     try {
         const delivery = await prisma.delivery.update({
             where: { id },
             data
         });
+
+        await logAudit(
+            user.userId,
+            'UPDATE_DELIVERY',
+            'Delivery',
+            delivery.id,
+            { changedFields: Object.keys(data), newStatus: delivery.status },
+            req.ip
+        );
+
         res.json(delivery);
     } catch (error) {
         res.status(500).json({ message: 'Error updating delivery', error });
