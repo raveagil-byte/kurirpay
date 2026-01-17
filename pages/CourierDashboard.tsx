@@ -1,5 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
+import { toast } from 'sonner';
 import { User, Delivery, DeliveryStatus, PaymentStatus, AppNotification } from '../types.ts';
 
 interface CourierDashboardProps {
@@ -87,6 +88,7 @@ const CourierDashboard: React.FC<CourierDashboardProps> = ({
 
     setItemCount(0);
     setShowLogModal(false);
+    toast.success('Laporan pengiriman berhasil dikirim!');
   };
 
   const handleRequestPayout = () => {
@@ -103,10 +105,72 @@ const CourierDashboard: React.FC<CourierDashboardProps> = ({
       message: `${user.name} mengajukan penarikan gaji sebesar Rp ${stats.unpaidEarnings.toLocaleString('id-ID')}.`,
       type: 'PAYOUT_REQUEST'
     });
+    toast.success('Permintaan pembayaran gaji berhasil diajukan!');
+  };
+
+  const [printingOverview, setPrintingOverview] = useState(false);
+
+  const handlePrintOverview = () => {
+    setPrintingOverview(true);
+    setTimeout(() => {
+      window.print();
+      setPrintingOverview(false);
+    }, 100);
   };
 
   return (
     <div className="space-y-8">
+      {printingOverview && (
+        <div className="print-only receipt-container p-8">
+          <div className="text-center border-b-2 border-slate-900 pb-6 mb-8">
+            <h1 className="text-4xl font-black tracking-tighter text-slate-900 mb-1">KurirPay</h1>
+            <p className="text-sm font-bold uppercase tracking-widest text-slate-500">Laporan Riwayat Pengiriman</p>
+          </div>
+
+          <div className="bg-slate-50 p-6 rounded-none border border-slate-200 mb-10">
+            <div className="flex justify-between items-center mb-4 border-b border-slate-200 pb-4">
+              <p className="text-xs font-bold text-slate-500">NAMA KURIR</p>
+              <p className="font-black text-lg text-slate-900">{user.name}</p>
+            </div>
+            <div className="flex justify-between items-center">
+              <p className="text-xs font-bold text-slate-500">PERIODE DATA</p>
+              <p className="text-sm font-medium">Semua Riwayat - {new Date().toLocaleDateString('id-ID')}</p>
+            </div>
+          </div>
+
+          <table className="w-full mb-10 text-sm">
+            <thead>
+              <tr className="border-b-2 border-slate-900">
+                <th className="py-3 text-left font-black uppercase">Tanggal</th>
+                <th className="py-3 text-center font-black uppercase">Jumlah</th>
+                <th className="py-3 text-right font-black uppercase">Estimasi Pendapatan</th>
+                <th className="py-3 text-center font-black uppercase">Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {deliveries.map(d => (
+                <tr key={d.id}>
+                  <td className="py-2 text-slate-700">{new Date(d.date).toLocaleDateString()}</td>
+                  <td className="py-2 text-center text-slate-900 font-bold">{d.itemCount} Pkt</td>
+                  <td className="py-2 text-right">Rp {d.totalAmount.toLocaleString()}</td>
+                  <td className="py-2 text-center text-xs uppercase font-bold">{d.status}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <div className="flex justify-end mb-20">
+            <div className="bg-slate-900 text-white p-6 w-72">
+              <p className="text-[10px] font-bold uppercase tracking-widest opacity-60 mb-1">TOTAL PENDAPATAN (VERIFIED)</p>
+              <h3 className="text-2xl font-black">Rp {stats.totalEarnings.toLocaleString('id-ID')}</h3>
+            </div>
+          </div>
+
+          <div className="mt-20 text-center">
+            <p className="text-[9px] text-slate-400 uppercase font-bold italic">Dokumen ini dicetak otomatis dari sistem KurirPay.</p>
+          </div>
+        </div>
+      )}
 
 
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-4 no-print">
@@ -172,7 +236,7 @@ const CourierDashboard: React.FC<CourierDashboardProps> = ({
       <div className="bg-white rounded-3xl border shadow-sm overflow-hidden">
         <div className="p-6 border-b flex justify-between items-center bg-slate-50/50">
           <h2 className="font-bold text-slate-900">Riwayat Pengiriman</h2>
-          <button onClick={() => window.print()} className="text-xs font-bold text-indigo-600 hover:bg-indigo-50 px-3 py-1.5 rounded-lg transition-colors">Unduh Laporan PDF</button>
+          <button onClick={handlePrintOverview} className="text-xs font-bold text-indigo-600 hover:bg-indigo-50 px-3 py-1.5 rounded-lg transition-colors">Unduh Laporan PDF</button>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left">

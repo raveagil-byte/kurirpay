@@ -1,5 +1,6 @@
 import React from 'react';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'sonner';
 import { Role } from './types';
 
 // Contexts
@@ -36,9 +37,26 @@ const AppRoutes: React.FC = () => {
   const { addNotification, clearAll: clearNotifications } = useNotifications();
 
   // Reset Data Helper
-  const handleResetData = () => {
-    clearDeliveries();
-    clearNotifications();
+  const handleResetData = async () => {
+    try {
+      const storedToken = localStorage.getItem('auth_token');
+      if (!storedToken) return;
+
+      await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/settings/reset`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${storedToken}`
+        }
+      });
+
+      // Clear local state
+      clearDeliveries();
+      clearNotifications();
+      // Force refresh of users or other stats if needed
+      window.location.reload();
+    } catch (e) {
+      console.error("Failed to reset data", e);
+    }
   };
 
   if (!user) {
@@ -128,6 +146,7 @@ const App: React.FC = () => {
         <SettingsProvider>
           <NotificationProvider>
             <AppRoutes />
+            <Toaster position="top-center" richColors />
           </NotificationProvider>
         </SettingsProvider>
       </AuthProvider>

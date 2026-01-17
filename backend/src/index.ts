@@ -36,13 +36,44 @@ app.use(cors({
 }));
 app.use(express.json());
 
+import rateLimit from 'express-rate-limit';
+
+// Global API Limiter: 100 requests per 15 minutes
+const apiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { message: "Too many requests from this IP, please try again after 15 minutes" }
+});
+
+// Strict Auth Limiter: 5 login attempts per hour per IP
+const authLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000,
+    max: 10, // slightly more lenient than 5 for potential mishaps
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { message: "Too many login attempts, please try again later" }
+});
+
 import authRoutes from './routes/authRoutes';
 import deliveryRoutes from './routes/deliveryRoutes';
 import userRoutes from './routes/userRoutes';
 import settingsRoutes from './routes/settingsRoutes';
 import paymentRoutes from './routes/paymentRoutes';
 
-app.use('/api/auth', authRoutes);
+// Apply limiters
+app.use('/api/', apiLimiter);
+app.use('/api/auth', authLimiter); // Stricter limit overrides general? No, middleware chain. But usually specific first.
+// Actually, if we put apiLimiter on /api/, it applies to everything. 
+// We want auth to be stricter. Let's apply authLimiter specifically to auth routes *before* generic if possible, or just on the route itself.
+// Express middleware runs in order.
+
+app.use('/api/auth', authRoutes); // Auth limiter could be inside route file or here.
+// Let's modify the route definitions below to use limiters more granularly or just global generic.
+
+// Re-structure application of middleware:
+app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/deliveries', deliveryRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/settings', settingsRoutes);

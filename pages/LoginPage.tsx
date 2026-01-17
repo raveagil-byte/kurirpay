@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { toast } from 'sonner';
 import { useAuth } from '../contexts/AuthContext';
 import { Role } from '../types';
 import { API_URL } from '../config';
@@ -17,7 +18,16 @@ const LoginPage: React.FC<LoginPageProps> = ({ appName }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  // const [isAdmin, setIsAdmin] = useState(false); // Quick toggle for demo registration
+  const [rememberMe, setRememberMe] = useState(false);
+
+  // Load saved email on mount
+  React.useEffect(() => {
+    const savedEmail = localStorage.getItem('kurirpay_email');
+    if (savedEmail) {
+      setEmail(savedEmail);
+      setRememberMe(true);
+    }
+  }, []);
 
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -25,10 +35,15 @@ const LoginPage: React.FC<LoginPageProps> = ({ appName }) => {
     setForgotMessage(null);
     try {
       if (viewMode === 'login') {
+        if (rememberMe) {
+          localStorage.setItem('kurirpay_email', email);
+        } else {
+          localStorage.removeItem('kurirpay_email');
+        }
         await login(email, password);
       } else if (viewMode === 'register') {
         await register(name, email, password, Role.COURIER);
-        alert('Registrasi berhasil! Silakan login.');
+        toast.success('Registrasi berhasil! Silakan login.');
         setViewMode('login');
         setPassword('');
         setShowPassword(false);
@@ -42,8 +57,9 @@ const LoginPage: React.FC<LoginPageProps> = ({ appName }) => {
         const data = await response.json();
         if (response.ok) {
           setForgotMessage("Link reset password telah dikirim ke email Anda.");
+          toast.success("Link reset reset password telah dikirim.");
         } else {
-          alert(data.message || 'Gagal mengirim email');
+          toast.error(data.message || 'Gagal mengirim email');
         }
       }
     } catch (err) {
@@ -155,6 +171,8 @@ const LoginPage: React.FC<LoginPageProps> = ({ appName }) => {
                     id="remember-me"
                     name="remember-me"
                     type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
                     className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-slate-300 rounded"
                   />
                   <label htmlFor="remember-me" className="ml-2 block text-sm text-slate-900">

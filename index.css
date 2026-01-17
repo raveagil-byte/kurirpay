@@ -5,3 +5,53 @@
 body {
   font-family: 'Inter', sans-serif;
 }
+
+@media print {
+  @page {
+    margin: 20mm;
+    size: A4 portrait;
+  }
+
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    background: white;
+  }
+
+  /* Hide everything by default regarding navigation and layouts */
+  .no-print,
+  header,
+  nav,
+  aside {
+    display: none !important;
+  }
+
+  /* Ensure the specific print area is visible and takes up full space */
+  .print-only {
+    display: block !important;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: auto;
+    background: white;
+    z-index: 9999;
+  }
+
+  /* Reset layout constraints for print */
+  .receipt-container {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+}
+
+/* Hide print-only elements on screen */
+@media screen {
+  .print-only {
+    display: none !important;
+  }
+}

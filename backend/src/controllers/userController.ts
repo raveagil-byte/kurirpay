@@ -1,12 +1,11 @@
 import { Request, Response } from 'express';
 import prisma from '../prisma';
 import bcrypt from 'bcryptjs';
+import { logAudit } from '../services/auditService';
 
 export const getUsers = async (req: Request, res: Response) => {
     try {
-        console.log("DEBUG: Fetching users list...");
         const users = await prisma.user.findMany();
-        console.log(`DEBUG: Found ${users.length} users.`);
 
         // Remove password manually
         const safeUsers = users.map(u => {
@@ -16,8 +15,6 @@ export const getUsers = async (req: Request, res: Response) => {
 
         res.json(safeUsers);
     } catch (error) {
-        console.error("DEBUG ERROR in getUsers:", error);
-        // Send stringified error to client for diagnostics
         res.status(500).json({
             message: 'Error fetching users',
             error: error instanceof Error ? error.message : String(error)
@@ -28,6 +25,7 @@ export const getUsers = async (req: Request, res: Response) => {
 export const updateUser = async (req: Request, res: Response) => {
     const { id } = req.params;
     const { name, email, password } = req.body;
+    const adminUser = (req as any).user;
 
     try {
         let data: any = { name, email };
@@ -40,6 +38,15 @@ export const updateUser = async (req: Request, res: Response) => {
             data
         });
 
+        await logAudit(
+            adminUser.userId,
+            'UPDATE_USER',
+            'User',
+            user.id,
+            { changedFields: Object.keys(data) },
+            req.ip
+        );
+
         res.json({ id: user.id, name: user.name, email: user.email, role: user.role });
     } catch (error) {
         res.status(500).json({ message: 'Error updating user', error });
@@ -48,12 +55,23 @@ export const updateUser = async (req: Request, res: Response) => {
 
 export const deleteUser = async (req: Request, res: Response) => {
     const { id } = req.params;
+    const adminUser = (req as any).user;
+
     try {
-        // Delete related data first or use cascade in schema (standard Prisma relation behavior)
-        // For now assume Cascade delete is not set, so we manually delete deliveries? 
-        // Actually Prisma schema handles relations, but let's just delete the user.
+        // Log before delete or after? If after, we can't refer to name easily unless fetched.
+        // Let's just delete.
         await prisma.delivery.deleteMany({ where: { courierId: id } });
         await prisma.user.delete({ where: { id } });
+
+        await logAudit(
+            adminUser.userId,
+            'DELETE_USER',
+            'User',
+            id,
+            { relatedDataDeleted: 'All deliveries' },
+            req.ip
+        );
+
         res.json({ message: 'User deleted' });
     } catch (error) {
         res.status(500).json({ message: 'Error deleting user', error });

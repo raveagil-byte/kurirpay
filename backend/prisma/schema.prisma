@@ -90,3 +90,15 @@ model SystemSettings {
   currencySymbol           String  @default("Rp")
   allowCourierSelfRegister Boolean @default(false)
 }
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  action    String   // e.g., "CREATE_DELIVERY", "PAY_SALARY"
+  entity    String   // e.g., "Delivery", "Payment"
+  entityId  String?  // The ID of the affected record
+  details   String?  // JSON string or description of change
+  ipAddress String?
+  createdAt DateTime @default(now())
+}

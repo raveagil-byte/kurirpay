@@ -41,7 +41,12 @@ export const useUsers = () => {
                 body: JSON.stringify(newUser)
             });
             if (response.ok) {
-                await fetchUsers();
+                const data = await response.json();
+                if (data.user) {
+                    setUsers(prev => [...prev, data.user]);
+                } else {
+                    await fetchUsers();
+                }
             } else {
                 const err = await response.json();
                 setError(err.message || 'Gagal membuat user');

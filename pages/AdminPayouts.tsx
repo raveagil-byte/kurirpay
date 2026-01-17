@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { useUsers } from '../hooks/useUsers';
 import { usePayments } from '../hooks/usePayments';
 import { Role, Delivery } from '../types';
@@ -69,7 +70,7 @@ const AdminPayouts: React.FC = () => {
             });
 
             if (success) {
-                alert('Pembayaran berhasil dicatat!');
+                toast.success('Pembayaran berhasil dicatat!');
                 setPayoutNotes('');
                 loadUnpaid(selectedCourier);
                 fetchPayments(); // Refresh history
@@ -169,8 +170,8 @@ const AdminPayouts: React.FC = () => {
                                                 key={d.id}
                                                 onClick={() => toggleDeliverySelection(d.id)}
                                                 className={`group cursor-pointer p-4 rounded-2xl border transition-all flex items-center justify-between ${selectedDeliveryIds.has(d.id)
-                                                        ? 'bg-indigo-50 border-indigo-200 ring-1 ring-indigo-200'
-                                                        : 'bg-white border-slate-100 hover:border-indigo-100'
+                                                    ? 'bg-indigo-50 border-indigo-200 ring-1 ring-indigo-200'
+                                                    : 'bg-white border-slate-100 hover:border-indigo-100'
                                                     }`}
                                             >
                                                 <div className="flex items-center gap-4">

@@ -15,11 +15,13 @@ export const useDeliveries = () => {
         if (!token) return;
         setLoading(true);
         try {
-            const response = await fetch(`${API_URL}/api/deliveries`, {
+            const response = await fetch(`${API_URL}/api/deliveries?limit=1000`, { // Temp high limit to keep current UX until pagination UI is built
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            const data = await response.json();
+            const result = await response.json();
             if (response.ok) {
+                // Support both legacy array and new paginated structure
+                const data = Array.isArray(result) ? result : result.data;
                 setDeliveries(data);
             } else {
                 setError('Failed to fetch deliveries');
@@ -36,8 +38,6 @@ export const useDeliveries = () => {
     }, [fetchDeliveries]);
 
     const addDelivery = async (delivery: Delivery) => {
-        // Backend handles calculation if we wanted, but for now we send raw details
-        // Note: Delivery type interface in frontend might have ID, but creating new one doesnt need it
         try {
             const response = await fetch(`${API_URL}/api/deliveries`, {
                 method: 'POST',
@@ -55,7 +55,8 @@ export const useDeliveries = () => {
             });
 
             if (response.ok) {
-                await fetchDeliveries(); // Refresh list
+                const newDelivery = await response.json();
+                setDeliveries(prev => [newDelivery, ...prev]);
             }
         } catch (err) {
             console.error(err);

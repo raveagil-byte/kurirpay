@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import prisma from '../prisma';
 import { sendResetEmail } from '../services/emailService';
+import { logAudit } from '../services/auditService';
 
 export const register = async (req: Request, res: Response) => {
     try {
@@ -35,6 +36,9 @@ export const register = async (req: Request, res: Response) => {
             }
         });
 
+        // Audit Log
+        await logAudit(user.id, 'REGISTER', 'User', user.id, { email }, req.ip);
+
         res.status(201).json({ message: 'User registered successfully', user: { id: user.id, name: user.name, email: user.email, role: user.role } });
     } catch (error) {
         res.status(500).json({ message: 'Error registering user', error });
@@ -47,11 +51,13 @@ export const login = async (req: Request, res: Response) => {
 
         const user = await prisma.user.findUnique({ where: { email } });
         if (!user) {
+            await logAudit('system', 'LOGIN_FAILED', 'User', null, { email, reason: 'User not found' }, req.ip);
             return res.status(400).json({ message: 'Invalid credentials' });
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
+            await logAudit(user.id, 'LOGIN_FAILED', 'User', user.id, { reason: 'Wrong password' }, req.ip);
             return res.status(400).json({ message: 'Invalid credentials' });
         }
 
@@ -60,6 +66,8 @@ export const login = async (req: Request, res: Response) => {
             process.env.JWT_SECRET || 'secret',
             { expiresIn: '1d' }
         );
+
+        await logAudit(user.id, 'LOGIN_SUCCESS', 'User', user.id, null, req.ip);
 
         res.json({
             token,
@@ -101,6 +109,7 @@ export const forgotPassword = async (req: Request, res: Response) => {
 
         // Send Email
         await sendResetEmail(email, token);
+        await logAudit(user.id, 'FORGOT_PASSWORD', 'User', user.id, null, req.ip);
 
         res.json({ message: 'Reset link sent to email' });
     } catch (error) {
@@ -134,6 +143,8 @@ export const resetPassword = async (req: Request, res: Response) => {
                 resetTokenExpiry: null
             }
         });
+
+        await logAudit(user.id, 'RESET_PASSWORD', 'User', user.id, null, req.ip);
 
         res.json({ message: 'Password successfully reset' });
     } catch (error) {

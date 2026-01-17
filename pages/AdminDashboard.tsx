@@ -1,5 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
+import { toast } from 'sonner';
 import { User, Delivery, Role, DeliveryStatus, PaymentStatus, AppNotification } from '../types.ts';
 
 interface AdminDashboardProps {
@@ -36,6 +37,15 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   // State for single delivery printing
   const [printingDelivery, setPrintingDelivery] = useState<Delivery | null>(null);
+  const [printingIdentity, setPrintingIdentity] = useState<User | null>(null);
+
+  const handlePrintIdentity = (user: User) => {
+    setPrintingIdentity(user);
+    setTimeout(() => {
+      window.print();
+      setPrintingIdentity(null);
+    }, 100);
+  };
 
   // Payroll Confirmation State
   const [paymentModalData, setPaymentModalData] = useState<{ courier: User; amount: number } | null>(null);
@@ -149,6 +159,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
       type: 'SYSTEM'
     });
 
+    toast.success(`Pembayaran untuk ${courier.name} berhasil dicatat!`);
+
     setPaymentModalData(null);
   };
 
@@ -249,6 +261,43 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
           <div className="mt-20 text-center">
             <p className="text-[9px] text-slate-400 uppercase font-bold italic">Laporan ini dihasilkan secara otomatis oleh sistem KurirPay dan merupakan dokumen sah internal.</p>
+          </div>
+        </div>
+      )}
+
+      {/* Printable Identity Card */}
+      {printingIdentity && (
+        <div className="print-only receipt-container items-center justify-center flex flex-col h-screen">
+          <div className="border-4 border-slate-900 p-8 rounded-3xl w-full max-w-lg text-center relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-4 bg-slate-900"></div>
+
+            <h1 className="text-3xl font-black text-slate-900 mb-2 mt-4">{appName}</h1>
+            <p className="text-xs font-bold uppercase tracking-[0.3em] text-slate-500 mb-8">Official Courier Identity</p>
+
+            <div className="mb-8 relative inline-block">
+              <img src={getSignatureUrl(printingIdentity)} alt="QR" className="w-64 h-64 mix-blend-multiply" />
+              <div className="absolute inset-0 border-2 border-slate-900/10 rounded-xl"></div>
+            </div>
+
+            <h2 className="text-4xl font-black text-slate-900 mb-2 uppercase">{printingIdentity.name}</h2>
+            <div className="inline-block px-4 py-1 bg-slate-900 text-white text-sm font-bold uppercase tracking-widest rounded-full mb-8">
+              {printingIdentity.role}
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 text-left border-t-2 border-slate-100 pt-8">
+              <div>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">ID Kurir</p>
+                <p className="font-mono font-bold text-lg">{printingIdentity.id.split('-')[0].toUpperCase()}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Bergabung Sejak</p>
+                <p className="font-bold text-lg">{new Date().getFullYear()}</p>
+              </div>
+            </div>
+
+            <div className="mt-12 text-center">
+              <p className="text-[10px] text-slate-400 uppercase font-bold italic">Kartu identitas ini sah dan dikeluarkan oleh sistem {appName}.</p>
+            </div>
           </div>
         </div>
       )}
@@ -683,7 +732,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <div className="p-2 bg-slate-50 inline-block rounded-2xl border border-slate-100">
                   <img src={getSignatureUrl(courier)} alt="QR Signature" className="w-40 h-40" />
                 </div>
-                <button onClick={() => window.print()} className="w-full py-2.5 bg-slate-900 text-white rounded-xl text-xs font-bold no-print">Cetak Identitas</button>
+                <button onClick={() => handlePrintIdentity(courier)} className="w-full py-2.5 bg-slate-900 text-white rounded-xl text-xs font-bold no-print">Cetak Identitas</button>
               </div>
             </div>
           ))}

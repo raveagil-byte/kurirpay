@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getSettings, updateSettings } from '../controllers/settingsController';
+import { getSettings, updateSettings, resetData } from '../controllers/settingsController';
 import { authenticateToken } from '../middleware/authMiddleware';
 
 const router = Router();
@@ -9,5 +9,6 @@ const router = Router();
 // For simplicity, allowed public read, protected write.
 router.get('/', getSettings);
 router.put('/', authenticateToken, updateSettings);
+router.post('/reset', authenticateToken, resetData);
 
 export default router;

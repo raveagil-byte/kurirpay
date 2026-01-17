@@ -20,7 +20,7 @@ export const getUnpaidDeliveries = async (req: Request, res: Response) => {
 
 export const createPayout = async (req: Request, res: Response) => {
     const { courierId, deliveryIds, amount, method, notes } = req.body;
-    const adminId = (req as any).user?.id;
+    const adminUser = (req as any).user;
 
     try {
         const result = await prisma.$transaction(async (tx: any) => {
@@ -29,29 +29,25 @@ export const createPayout = async (req: Request, res: Response) => {
                 where: {
                     id: { in: deliveryIds },
                     courierId,
-                    paymentStatus: PaymentStatus.UNPAID
+                    paymentStatus: { not: PaymentStatus.PAID } // Corrected check
                 }
             });
 
+            // If some are missing or already paid, we might want to just proceed with valid ones or error.
+            // Enterprise Standard: Error and tell user to refresh. Data integrity first.
             if (deliveries.length !== deliveryIds.length) {
-                throw new Error("Beberapa pengiriman tidak valid atau sudah dibayar.");
+                throw new Error("Data mismatch: Some deliveries might have been paid already.");
             }
 
-            // Calculate total matching (optional security check, relying on client sum for now but safer to recalc)
             const calculatedTotal = deliveries.reduce((acc: number, curr: any) => acc + curr.totalAmount, 0);
-
-            // Allow small float diff if needed, but here integers mostly.
-            // If they pass 'amount' that is different, maybe warn?
-            // Let's us calculatedTotal for the record if amount is missing
-            const finalAmount = amount || calculatedTotal;
 
             const payment = await tx.payment.create({
                 data: {
                     courierId,
-                    amount: finalAmount,
+                    amount: calculatedTotal,
                     method,
                     notes,
-                    adminId
+                    adminId: adminUser.userId
                 }
             });
 
@@ -63,11 +59,25 @@ export const createPayout = async (req: Request, res: Response) => {
                 }
             });
 
+            // In-transaction Audit Log (if using same prisma instance, but tx instance needs to be passed if we want atomic)
+            // Use tx.auditLog.create to ensure it rolls back if payment fails
+            await tx.auditLog.create({
+                data: {
+                    userId: adminUser.userId,
+                    action: 'CREATE_PAYOUT',
+                    entity: 'Payment',
+                    entityId: payment.id,
+                    details: JSON.stringify({ amount: calculatedTotal, count: deliveries.length, method }),
+                    ipAddress: req.ip
+                }
+            });
+
             return payment;
         });
 
         res.json(result);
     } catch (error: any) {
+        console.error(error);
         res.status(400).json({ message: error.message || 'Pembayaran gagal', error });
     }
 };
