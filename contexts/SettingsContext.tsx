@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { AppSettings } from '../types';
 import { useAuth } from './AuthContext';
+import { API_URL } from '../config';
 
 interface SettingsContextType {
     settings: AppSettings;

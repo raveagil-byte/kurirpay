@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import React from 'react';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Role } from './types';
 
@@ -23,7 +23,7 @@ import DashboardLayout from './layouts/DashboardLayout';
 
 // Sub-component to handle routing logic so hooks can be used
 const AppRoutes: React.FC = () => {
-  const { user, login } = useAuth();
+  const { user } = useAuth();
   const { settings, updateSettings } = useSettings();
   const { users, addUser, deleteUser, updateUser } = useUsers();
   const {
