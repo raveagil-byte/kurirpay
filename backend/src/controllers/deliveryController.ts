@@ -43,6 +43,7 @@ export const getDeliveries = async (req: Request, res: Response) => {
 
 import { z } from 'zod';
 import { logAudit } from '../services/auditService';
+import { createNotification } from '../services/notificationService';
 
 // Validation Schema
 const createDeliverySchema = z.object({
@@ -116,6 +117,19 @@ export const updateDelivery = async (req: Request, res: Response) => {
             { changedFields: Object.keys(data), newStatus: delivery.status },
             req.ip
         );
+
+        // Notify Courier
+        if (data.status) {
+            const statusMsg = data.status === 'APPROVED' ? 'Disetujui' : data.status === 'REJECTED' ? 'Ditolak' : 'Diupdate';
+            const type = data.status === 'APPROVED' ? 'SUCCESS' : data.status === 'REJECTED' ? 'ERROR' : 'INFO';
+
+            await createNotification(
+                delivery.courierId,
+                `Laporan ${statusMsg}`,
+                `Laporan pengiriman tanggal ${new Date(delivery.date).toLocaleDateString()} telah ${statusMsg.toLowerCase()}.`,
+                type
+            );
+        }
 
         res.json(delivery);
     } catch (error) {

@@ -72,6 +72,17 @@ export const createPayout = async (req: Request, res: Response) => {
                 }
             });
 
+            // Notify Courier
+            await tx.notification.create({
+                data: {
+                    userId: courierId,
+                    title: 'Pembayaran Gaji Diterima',
+                    message: `Gaji sebesar Rp ${calculatedTotal.toLocaleString('id-ID')} telah dibayarkan via ${method}.`,
+                    type: 'SUCCESS',
+                    isRead: false
+                }
+            });
+
             return payment;
         });
 
