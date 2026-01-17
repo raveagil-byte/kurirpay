@@ -88,8 +88,18 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
     res.status(500).json({ message: 'Internal Server Error', error: err.message });
 });
 
+console.log("Starting Backend Initialization...");
+
 app.get('/', (req, res) => {
     res.send('KurirPay Backend is Running!');
+});
+
+app.get('/api/debug', (req, res) => {
+    res.json({
+        message: 'Debug Endpoint Works',
+        env: process.env.NODE_ENV,
+        hasPrisma: !!prisma
+    });
 });
 
 app.get('/api/health', (req, res) => {
