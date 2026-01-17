@@ -8,7 +8,32 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;
 
-app.use(cors());
+// CORS Configuration
+const allowedOrigins = [
+    process.env.APP_URL,
+    'http://localhost:5173',
+    'https://kurirpay.vercel.app'
+].filter(Boolean); // Remove empty values
+
+app.use(cors({
+    origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+
+        // Check if origin is allowed or is a Vercel preview deployment
+        if (allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
+            callback(null, true);
+        } else {
+            // For development, we might want to be lenient, but for prod be strict
+            // If strictly prod: callback(new Error('Not allowed by CORS'));
+            // For this user's context (hybrid), let's log and allow or restrict?
+            // Let's restrict to be "production ready" as requested.
+            console.log('Blocked by CORS:', origin);
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true
+}));
 app.use(express.json());
 
 import authRoutes from './routes/authRoutes';

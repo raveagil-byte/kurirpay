@@ -16,12 +16,22 @@ export const register = async (req: Request, res: Response) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
+        // Security: Check if self-registration is allowed in system settings
+        const settings = await prisma.systemSettings.findFirst();
+
+        // If settings exist and registration is disabled
+        if (settings && !settings.allowCourierSelfRegister) {
+            return res.status(403).json({ message: 'Pendaftaran mandiri saat ini ditutup oleh Admin.' });
+        }
+
         const user = await prisma.user.create({
             data: {
                 name,
                 email,
                 password: hashedPassword,
-                role: role || 'COURIER'
+                // Security: Public registration always forces COURIER role. 
+                // Admin creation must be done via seed or existing admin dashboard.
+                role: 'COURIER'
             }
         });
 
