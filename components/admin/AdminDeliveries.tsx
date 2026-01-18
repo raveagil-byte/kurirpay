@@ -360,6 +360,36 @@ const AdminDeliveries: React.FC<AdminDeliveriesProps> = ({ appName }) => {
                                                             {d.notes || 'No notes'}
                                                         </p>
                                                         <button
+                                                            onClick={async () => {
+                                                                if (d.paymentStatus === PaymentStatus.PAID) {
+                                                                    toast.error("Tidak dapat menghapus laporan yang sudah dibayar.");
+                                                                    return;
+                                                                }
+                                                                if (!confirm('Anda yakin ingin MENGHAPUS laporan ini secara permanen?')) return;
+
+                                                                try {
+                                                                    const res = await fetch(`${API_URL}/api/deliveries/${d.id}`, {
+                                                                        method: 'DELETE',
+                                                                        headers: { 'Authorization': `Bearer ${token}` }
+                                                                    });
+                                                                    if (res.ok) {
+                                                                        toast.success("Laporan berhasil dihapus");
+                                                                        window.location.reload();
+                                                                    } else {
+                                                                        toast.error("Gagal menghapus laporan");
+                                                                    }
+                                                                } catch (e) {
+                                                                    toast.error("Terjadi kesalahan sistem");
+                                                                }
+                                                            }}
+                                                            className="px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all flex items-center gap-1.5"
+                                                            title="Hapus Laporan"
+                                                        >
+                                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                            </svg>
+                                                        </button>
+                                                        <button
                                                             onClick={() => handlePrintSingle(d)}
                                                             className="px-3 py-1.5 bg-slate-100 text-slate-600 hover:bg-indigo-600 hover:text-white rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all flex items-center gap-1.5"
                                                         >
