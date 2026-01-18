@@ -40,6 +40,38 @@ export const getDeliveries = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
+// Public access - Get basic delivery info (Tracking/Dashboard Public)
+export const getPublicDeliveries = catchAsync(async (req: Request, res: Response) => {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 20;
+    const skip = (page - 1) * limit;
+
+    const [deliveries, total] = await Promise.all([
+        prisma.delivery.findMany({
+            where: { status: 'APPROVED' }, // Only show approved deliveries publicly
+            select: {
+                id: true,
+                date: true,
+                itemCount: true,
+                status: true,
+                courier: {
+                    select: { name: true } // Only show courier name
+                },
+                createdAt: true
+            },
+            orderBy: { date: 'desc' },
+            take: limit,
+            skip: skip
+        }),
+        prisma.delivery.count({ where: { status: 'APPROVED' } })
+    ]);
+
+    res.json({
+        data: deliveries,
+        meta: { total, page, limit, totalPages: Math.ceil(total / limit) }
+    });
+});
+
 // Validation Schema
 const createDeliverySchema = z.object({
     date: z.string().transform((str) => new Date(str)),

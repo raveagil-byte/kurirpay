@@ -23,6 +23,8 @@ import ProfilePage from './pages/ProfilePage';
 import AdminSettings from './pages/AdminSettings';
 import DashboardLayout from './layouts/DashboardLayout';
 
+import PublicTrackingPage from './pages/PublicTrackingPage';
+
 // Sub-component to handle routing logic so hooks can be used
 const AppRoutes: React.FC = () => {
   const { user } = useAuth();
@@ -63,13 +65,15 @@ const AppRoutes: React.FC = () => {
   if (!user) {
     return (
       <Routes>
+        <Route path="/" element={<PublicTrackingPage />} />
+        <Route path="/tracking" element={<PublicTrackingPage />} />
         <Route path="/login" element={
           <LoginPage
             appName={settings.appName}
           />
         } />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
-        <Route path="*" element={<Navigate to="/login" />} />
+        <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     );
   }
@@ -77,6 +81,7 @@ const AppRoutes: React.FC = () => {
   return (
     <DashboardLayout>
       <Routes>
+        <Route path="/tracking" element={<PublicTrackingPage />} />
         <Route
           path="/"
           element={
