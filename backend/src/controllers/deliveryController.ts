@@ -128,9 +128,19 @@ export const updateDelivery = catchAsync(async (req: Request, res: Response, nex
     // but we might want to ensure it's not in a weird state. 
     // For now, trust the existing flow.
 
+    // Sanitize input: Remove fields that Prisma doesn't expect in `data` (like relations or computed fields passed from frontend)
+    const allowedFields = ['itemCount', 'ratePerItem', 'totalAmount', 'status', 'paymentStatus', 'notes', 'date', 'proofPhotoUrl'];
+    const sanitizedData: any = {};
+
+    Object.keys(data).forEach(key => {
+        if (allowedFields.includes(key)) {
+            sanitizedData[key] = data[key];
+        }
+    });
+
     const delivery = await prisma.delivery.update({
         where: { id },
-        data // Updated data with calculated total
+        data: sanitizedData
     });
 
     await logAudit(
