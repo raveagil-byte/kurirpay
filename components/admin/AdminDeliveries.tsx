@@ -5,6 +5,8 @@ import { useData } from '../../contexts/DataContext';
 import { API_URL } from '../../config';
 import { Delivery, DeliveryStatus, PaymentStatus, Role } from '../../types';
 
+import { QRCodeSVG } from 'qrcode.react';
+
 interface AdminDeliveriesProps {
     appName: string;
 }
@@ -82,10 +84,11 @@ const AdminDeliveries: React.FC<AdminDeliveriesProps> = ({ appName }) => {
 
     const handlePrintSingle = (delivery: Delivery) => {
         setPrintingDelivery(delivery);
+        // Delay increased to 1.5s to ensure QR Code images from external API are fully loaded
         setTimeout(() => {
             window.print();
             setPrintingDelivery(null);
-        }, 100);
+        }, 1500);
     };
 
     const clearFilters = () => {
@@ -97,18 +100,7 @@ const AdminDeliveries: React.FC<AdminDeliveriesProps> = ({ appName }) => {
         setFilterCourierId("ALL");
     };
 
-    const getSignatureUrl = (delivery: Delivery, type: 'COURIER' | 'ADMIN', courierName?: string) => {
-        const timestamp = new Date().toLocaleString('id-ID');
-        let officialData = '';
 
-        if (type === 'COURIER') {
-            officialData = `AGREED:${courierName?.toUpperCase()} | DEL:${delivery.id.toUpperCase()} | ITEM:${delivery.itemCount} | DATE:${delivery.date}`;
-        } else {
-            officialData = `VALIDATED:KURIRPAY-SYSTEM | REF:${delivery.id.toUpperCase()} | STATUS:${delivery.status} | TS:${timestamp}`;
-        }
-
-        return `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(officialData)}&bgcolor=ffffff&color=0f172a&margin=0`;
-    };
 
     return (
         <div className="space-y-6">
@@ -171,10 +163,11 @@ const AdminDeliveries: React.FC<AdminDeliveriesProps> = ({ appName }) => {
                     <div className="grid grid-cols-2 gap-20 text-center items-end">
                         <div className="flex flex-col items-center">
                             <p className="text-[10px] font-bold uppercase text-slate-400 mb-4">TTD KURIR</p>
-                            <img
-                                src={getSignatureUrl(printingDelivery, 'COURIER', users.find(u => u.id === printingDelivery?.courierId)?.name)}
-                                alt="Courier QR"
-                                className="w-24 h-24 mb-2 mix-blend-multiply opacity-80"
+                            <QRCodeSVG
+                                value={`AGREED:${users.find(u => u.id === printingDelivery.courierId)?.name?.toUpperCase() || 'UNKNOWN'} | DEL:${printingDelivery.id.toUpperCase()} | ITEM:${printingDelivery.itemCount} | DATE:${printingDelivery.date}`}
+                                size={96}
+                                level={"M"}
+                                className="mb-2 opacity-80"
                             />
                             <div className="border-t border-slate-900 pt-2 font-bold uppercase text-xs w-full">
                                 {users.find(u => u.id === printingDelivery.courierId)?.name}
@@ -182,10 +175,11 @@ const AdminDeliveries: React.FC<AdminDeliveriesProps> = ({ appName }) => {
                         </div>
                         <div className="flex flex-col items-center">
                             <p className="text-[10px] font-bold uppercase text-slate-400 mb-4">ADMIN VALIDASI</p>
-                            <img
-                                src={getSignatureUrl(printingDelivery, 'ADMIN')}
-                                alt="Admin QR"
-                                className="w-24 h-24 mb-2 mix-blend-multiply opacity-80"
+                            <QRCodeSVG
+                                value={`VALIDATED:KURIRPAY-SYSTEM | REF:${printingDelivery.id.toUpperCase()} | STATUS:${printingDelivery.status} | TS:${new Date().toLocaleString('id-ID')}`}
+                                size={96}
+                                level={"M"}
+                                className="mb-2 opacity-80"
                             />
                             <div className="border-t border-slate-900 pt-2 font-bold uppercase tracking-widest text-xs w-full">
                                 SISTEM {appName}
