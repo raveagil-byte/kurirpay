@@ -7,6 +7,7 @@ import { Role } from './types';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { SettingsProvider, useSettings } from './contexts/SettingsContext';
 import { NotificationProvider, useNotifications } from './contexts/NotificationContext';
+import { DataProvider } from './contexts/DataContext';
 
 // Hooks
 import { useUsers } from './hooks/useUsers';
@@ -144,8 +145,10 @@ const App: React.FC = () => {
       <AuthProvider>
         <SettingsProvider>
           <NotificationProvider>
-            <AppRoutes />
-            <Toaster position="top-center" richColors />
+            <DataProvider>
+              <AppRoutes />
+              <Toaster position="top-center" richColors />
+            </DataProvider>
           </NotificationProvider>
         </SettingsProvider>
       </AuthProvider>

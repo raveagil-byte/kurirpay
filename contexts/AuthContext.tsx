@@ -63,14 +63,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.message || 'Login failed');
+                const msg = data.message || 'Login gagal';
+                throw new Error(msg === 'Invalid credentials' ? 'Email atau password salah' : msg);
             }
 
             const { token, user } = data as LoginResponse;
             setToken(token);
             setUser(user);
         } catch (err: any) {
-            setError(err.message);
+            setError(err.message === 'Invalid credentials' ? 'Email atau password salah' : err.message);
             throw err;
         } finally {
             setLoading(false);
@@ -90,7 +91,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.message || 'Registration failed');
+                const msg = data.message || 'Registrasi gagal';
+                throw new Error(msg === 'Email already exists' ? 'Email sudah terdaftar' : msg);
             }
             // Auto login after register? Or just redirect? For now just success.
         } catch (err: any) {

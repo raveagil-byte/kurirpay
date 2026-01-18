@@ -203,7 +203,7 @@ const CourierDashboard: React.FC<CourierDashboardProps> = ({
                 : 'bg-slate-800 text-slate-500 cursor-not-allowed'
               }`}
           >
-            {stats.isPayoutPending ? '🕒 Menunggu Admin...' : 'Tarik Gaji (Request Payout)'}
+            {stats.isPayoutPending ? '🕒 Menunggu Admin...' : 'Tarik Gaji'}
           </button>
 
           {stats.isPayoutPending && (
@@ -262,7 +262,7 @@ const CourierDashboard: React.FC<CourierDashboardProps> = ({
                     <td className="px-6 py-4">
                       <span className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${d.status === DeliveryStatus.APPROVED ? 'bg-green-50 text-green-700 border-green-100' :
                         d.status === DeliveryStatus.REJECTED ? 'bg-red-50 text-red-700 border-red-100' : 'bg-amber-50 text-amber-700 border-amber-100'
-                        }`}>{d.status}</span>
+                        }`}>{d.status === DeliveryStatus.APPROVED ? 'DISETUJUI' : d.status === DeliveryStatus.REJECTED ? 'DITOLAK' : 'MENUNGGU'}</span>
                     </td>
                     <td className="px-6 py-4">
                       <span className="text-[10px] text-slate-400 font-medium">{d.notes || '-'}</span>

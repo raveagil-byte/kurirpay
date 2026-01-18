@@ -267,7 +267,7 @@ const AdminPayouts: React.FC = () => {
                                         </td>
                                         <td className="px-8 py-4">
                                             <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 border border-slate-200">
-                                                {p.method}
+                                                {p.method === 'CASH' ? 'TUNAI' : p.method}
                                             </span>
                                         </td>
                                         <td className="px-8 py-4 text-right">

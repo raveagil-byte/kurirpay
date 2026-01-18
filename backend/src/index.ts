@@ -47,16 +47,16 @@ const apiLimiter = rateLimit({
     max: 100,
     standardHeaders: true,
     legacyHeaders: false,
-    message: { message: "Too many requests from this IP, please try again after 15 minutes" }
+    message: { message: "Terlalu banyak permintaan dari IP ini, silakan coba lagi dalam 15 menit." }
 });
 
-// Strict Auth Limiter: 5 login attempts per hour per IP
+// Strict Auth Limiter: 10 login attempts per hour per IP
 const authLimiter = rateLimit({
     windowMs: 60 * 60 * 1000,
-    max: 10, // slightly more lenient than 5 for potential mishaps
+    max: 10,
     standardHeaders: true,
     legacyHeaders: false,
-    message: { message: "Too many login attempts, please try again later" }
+    message: { message: "Terlalu banyak percobaan login gagal. Silakan coba lagi nanti (1 jam)." }
 });
 
 import authRoutes from './routes/authRoutes';
@@ -74,10 +74,42 @@ app.use('/api/settings', settingsRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/audit-logs', auditLogRoutes);
 
+// Helper untuk memformat error agar terbaca jelas di Vercel Logs
+const formatError = (err: any) => {
+    if (err instanceof Error) {
+        return {
+            ...err,
+            message: err.message, // Explicitly include non-enumerable properties
+            stack: err.stack,
+            name: err.name
+        };
+    }
+    return err;
+};
+
 // Global Error Handler
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-    console.error(err);
-    res.status(500).json({ message: 'Internal Server Error', error: err.message });
+    // Log error dalam format JSON string agar Vercel tidak memotongnya
+    console.error(JSON.stringify({
+        type: 'SERVER_ERROR',
+        path: req.path,
+        method: req.method,
+        error: formatError(err)
+    }, null, 2));
+
+    res.status(500).json({
+        message: 'Terjadi kesalahan sistem (Internal Server Error)',
+        error: process.env.NODE_ENV === 'production' ? err.message : err.message // Tampilkan message safe di prod
+    });
+});
+
+// Menangkap Error Fatal yang tidak tertangani (Crash)
+process.on('uncaughtException', (err) => {
+    console.error(JSON.stringify({ type: 'UNCAUGHT_EXCEPTION', error: formatError(err) }));
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error(JSON.stringify({ type: 'UNHANDLED_REJECTION', reason: formatError(reason) }));
 });
 
 console.log("Starting Backend Initialization...");
